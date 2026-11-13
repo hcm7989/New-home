@@ -1,597 +1,848 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0F1923">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="갈아타기">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0F1923">
-<meta name="description" content="부동산 갈아타기 전략 노트">
-<link rel="manifest" href="./manifest.json">
-<!-- iOS 홈스크린 아이콘 -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230F1923'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle'%3E🏠%3C/text%3E%3C/svg%3E">
-<title>갈아타기 전략 노트</title>
+<link rel="manifest" href="manifest.json">
+<script>try{var _t=(JSON.parse(localStorage.getItem('newhome_v5')||'{}').theme)||'auto';document.documentElement.dataset.theme=_t==='auto'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):_t;}catch(e){document.documentElement.dataset.theme='dark';}</script>
+<title>갈아타기 전략 노트 v5</title>
 <style>
 :root{
-  --bg:#0F1923;--surface:#1A2535;--surface2:#243044;--surface3:#2D3A50;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
-  --text:#F0F4F8;--text2:#8A9BB0;--text3:#5A6E82;
-  --blue:#4A9FE0;--blue-dim:rgba(74,159,224,0.15);
-  --green:#3EC97A;--green-dim:rgba(62,201,122,0.13);
-  --amber:#F5B340;--amber-dim:rgba(245,179,64,0.13);
-  --red:#EF5B5B;--red-dim:rgba(239,91,91,0.13);
-  --gray-dim:rgba(255,255,255,0.05);
-  --radius:14px;--radius-sm:8px;--radius-xs:6px
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,'Pretendard','Apple SD Gothic Neo',BlinkMacSystemFont,sans-serif;font-size:15px;overflow:hidden}
-
-/* ── 설치 배너 (Android용) */
-#install-banner{display:none;position:fixed;bottom:72px;left:12px;right:12px;z-index:200;background:var(--surface);border:.5px solid rgba(74,159,224,.4);border-radius:var(--radius);padding:13px 14px;flex-direction:row;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
-#install-banner.show{display:flex}
-.ib-icon{font-size:28px;flex-shrink:0}
-.ib-text{flex:1}
-.ib-title{font-size:14px;font-weight:700;margin-bottom:2px}
-.ib-sub{font-size:11px;color:var(--text2)}
-.ib-btn{background:var(--blue);color:#fff;border:none;border-radius:var(--radius-xs);padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0}
-.ib-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0}
-
-/* ── iOS 설치 가이드 토스트 */
-#ios-toast{display:none;position:fixed;bottom:80px;left:12px;right:12px;z-index:200;background:#1C2E42;border:.5px solid rgba(74,159,224,.35);border-radius:var(--radius);padding:14px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
-#ios-toast.show{display:block}
-.ios-toast-title{font-size:14px;font-weight:700;margin-bottom:8px;color:var(--blue)}
-.ios-toast-step{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px;font-size:13px;color:var(--text2);line-height:1.45}
-.ios-toast-num{background:var(--blue);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
-.ios-toast-close{width:100%;margin-top:10px;background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--radius-xs);padding:9px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer}
-
-.header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,25,35,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:env(safe-area-inset-top,12px) 16px 11px;border-bottom:0.5px solid var(--border)}
-.header-inner{display:flex;align-items:center;justify-content:space-between}
-.header-title{font-size:17px;font-weight:700;letter-spacing:-0.5px}
-.header-sub{font-size:11px;color:var(--text3);margin-top:1px}
-.hbadge{background:var(--blue-dim);color:var(--blue);font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700}
-/* 설치 버튼 (헤더 우측) */
-.install-btn{background:var(--green-dim);color:var(--green);border:.5px solid rgba(62,201,122,.3);border-radius:20px;font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;display:none}
-.install-btn.show{display:block}
-
-.content{position:fixed;top:0;left:0;right:0;bottom:64px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:calc(env(safe-area-inset-top,0px)+64px)}
-.content::-webkit-scrollbar{display:none}
-.page{display:none;padding:14px 14px 36px}
-.page.active{display:block}
-
-.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(15,25,35,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:0.5px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
-.tab-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 7px;gap:3px;background:none;border:none;cursor:pointer;color:var(--text3);transition:color .15s}
-.tab-btn.active{color:var(--blue)}
-.tab-btn svg{width:22px;height:22px;stroke-width:1.6;fill:none;stroke:currentColor}
-.tab-btn span{font-size:10px;font-weight:600;letter-spacing:0.2px}
-
-.card{background:var(--surface);border-radius:var(--radius);border:0.5px solid var(--border);margin-bottom:12px;overflow:hidden}
-.card-hd{padding:13px 15px 0;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
-.card-bd{padding:10px 15px 14px}
-
-.erow{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:.5px solid var(--border);gap:8px}
-.erow:last-child{border-bottom:none}
-.erow-label{font-size:13px;color:var(--text2);flex-shrink:0;max-width:54%;line-height:1.4}
-.erow-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.erow-unit{font-size:12px;color:var(--text3)}
-
-.num-input{background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--radius-xs);color:var(--text);font-size:13px;font-weight:600;text-align:right;padding:5px 8px;width:100px;outline:none;-webkit-appearance:none;font-family:inherit}
-.num-input:focus{border-color:var(--blue);background:var(--surface3)}
-.num-input.wide{width:120px}
-.txt-input{background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--radius-xs);color:var(--text);font-size:13px;font-weight:500;text-align:right;padding:5px 8px;width:160px;outline:none;-webkit-appearance:none;font-family:inherit}
-.txt-input:focus{border-color:var(--blue);background:var(--surface3)}
-
-.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
-.metric{background:var(--surface);border-radius:var(--radius);border:.5px solid var(--border);padding:13px 13px}
-.metric-lbl{font-size:11px;color:var(--text3);margin-bottom:5px;line-height:1.4}
-.metric-val{font-size:20px;font-weight:700;letter-spacing:-.5px}
-
-.cb{color:var(--blue)}.cr{color:var(--red)}.cg{color:var(--green)}.ca{color:var(--amber)}.cx{color:var(--text2)}
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
-.bb{background:var(--blue-dim);color:var(--blue)}.bg{background:var(--green-dim);color:var(--green)}
-.ba{background:var(--amber-dim);color:var(--amber)}.br{background:var(--red-dim);color:var(--red)}
-.bx{background:var(--gray-dim);color:var(--text2)}
-
-.alert{border-radius:var(--radius-sm);padding:11px 13px;font-size:13px;line-height:1.6;margin-bottom:12px}
-.alert-a{background:var(--amber-dim);border:.5px solid rgba(245,179,64,.25);color:var(--amber)}
-.alert-r{background:var(--red-dim);border:.5px solid rgba(239,91,91,.25);color:var(--red)}
-.alert-b{background:var(--blue-dim);border:.5px solid rgba(74,159,224,.25);color:var(--blue)}
-
-.rbox{background:var(--surface2);border-radius:var(--radius-sm);padding:13px;margin-top:10px}
-.rrow{display:flex;justify-content:space-between;font-size:13px;padding:5px 0}
-.rrow.tot{border-top:.5px solid var(--border2);margin-top:6px;padding-top:10px;font-weight:700;font-size:15px}
-.divider{height:.5px;background:var(--border);margin:10px 0}
-
-.sc{background:var(--surface);border-radius:var(--radius);border:.5px solid var(--border);margin-bottom:10px;overflow:hidden;transition:border-color .2s}
-.sc.open{border-color:rgba(74,159,224,.5)}
-.sc-hd{padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
-.sc-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sc-info{flex:1;min-width:0}
-.sc-name{font-size:14px;font-weight:600;margin-bottom:2px;line-height:1.3}
-.sc-desc{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sc-chev{color:var(--text3);transition:transform .25s;flex-shrink:0}
-.sc.open .sc-chev{transform:rotate(180deg)}
-.sc-bd{display:none;border-top:.5px solid var(--border);padding:12px 14px 14px}
-.sc.open .sc-bd{display:block}
-.pbar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;margin-top:6px}
-.pfill{height:100%;border-radius:2px}
-.row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:.5px solid var(--border);gap:10px}
-.row:last-child{border-bottom:none}
-.rl{font-size:13px;color:var(--text2);flex-shrink:0;max-width:52%;line-height:1.4}
-.rv{font-size:13px;font-weight:500;text-align:right;line-height:1.4}
-
-.sblock{margin-bottom:16px}
-.shead{display:flex;justify-content:space-between;margin-bottom:8px}
-.slbl{font-size:13px;color:var(--text2)}
-.sval{font-size:13px;font-weight:700;color:var(--text)}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--surface2);border-radius:2px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--blue);cursor:pointer;border:3px solid var(--bg)}
-
-.ctab-wrap{display:flex;gap:6px;margin-bottom:16px}
-.ctab{flex:1;padding:9px 0;border-radius:var(--radius-sm);border:.5px solid var(--border2);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
-.ctab.on{background:var(--blue);color:#fff;border-color:var(--blue)}
-.ctab.off{background:var(--surface);color:var(--text2)}
-
-.ytime-card{background:var(--surface);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
-.ytime-card.y26{border-left:3px solid var(--text3);border-top:.5px solid var(--border);border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)}
-.ytime-card.y27{border-left:3px solid var(--amber);border-top:.5px solid var(--border);border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)}
-.ytime-card.y28{border-left:3px solid var(--blue);border-top:.5px solid var(--border);border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)}
-.ytime-hd{padding:12px 14px 0;display:flex;justify-content:space-between;align-items:center}
-.ytime-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}
-.ytime-bd{padding:8px 14px 14px}
-
-.budget3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
-.bslot{border-radius:var(--radius-sm);padding:10px 6px;text-align:center}
-.bslot-lbl{font-size:10px;margin-bottom:4px}
-.bslot-val{font-size:15px;font-weight:700}
-
-.swrap{display:flex;gap:8px;margin-bottom:6px}
-.sinput{flex:1;background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-sm);padding:12px 13px;color:var(--text);font-size:15px;outline:none;-webkit-appearance:none}
-.sinput:focus{border-color:var(--blue)}
-.sinput::placeholder{color:var(--text3)}
-.sbtn{background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer}
-.sbtn:active{opacity:.75}
-.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
-.chip{background:var(--surface2);border:.5px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;white-space:nowrap}
-.chip:active,.chip.active{background:var(--blue-dim);color:var(--blue);border-color:rgba(74,159,224,.4)}
-.pcard{background:var(--surface);border-radius:var(--radius);border:.5px solid var(--border);padding:14px 15px;margin-bottom:10px}
-.pcard.hi{border-color:rgba(62,201,122,.4)}
-.pname{font-size:15px;font-weight:700;line-height:1.35}
-.pprice{font-size:22px;font-weight:700;color:var(--blue);margin:6px 0}
-.pmeta{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px}
-.lbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.lbtn{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;border-radius:var(--radius-sm);font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;border:.5px solid transparent}
-.lbtn:active{opacity:.75}
-.lbtn-n{background:rgba(3,199,90,.13);color:#03C75A;border-color:rgba(3,199,90,.3)}
-.lbtn-h{background:rgba(255,107,53,.13);color:#FF6B35;border-color:rgba(255,107,53,.3)}
-.lbtn-full{grid-column:1/-1;background:var(--blue-dim);color:var(--blue);border-color:rgba(74,159,224,.3)}
-.slbl2{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:16px 0 9px}
-.trow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:.5px solid var(--border)}
-.trow:last-child{border-bottom:none}
-.tamt{font-size:14px;font-weight:700;color:var(--blue)}
-
-.tlwrap{padding-left:6px}
-.tli{display:flex;gap:14px;padding-bottom:22px}
-.tli:last-child{padding-bottom:0}
-.tll{display:flex;flex-direction:column;align-items:center;width:14px;flex-shrink:0}
-.tldot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:3px}
-.tlline{width:1.5px;flex:1;margin-top:5px;background:var(--border2)}
-.tlr{flex:1}
-.tlyear{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;text-transform:uppercase}
-.tltitle{font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3}
-.tldesc{font-size:12px;color:var(--text2);line-height:1.65}
-
-.edit-hint{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;margin-bottom:12px}
-.page-title{font-size:24px;font-weight:700;letter-spacing:-.8px;margin-bottom:3px}
-.page-sub{font-size:13px;color:var(--text3);margin-bottom:14px}
+  --bg:#0E1620;--panel:#16212C;--panel2:#1D2B38;--line:#26384A;--fg:#EEF3F7;--fg2:#C9D5DF;--mut:#9DB0C1;
+  --acc:#5AAEFF;--accfg:#04121F;--up:#FF6B7D;--dn:#5B9BFF;--ok:#3DD68C;--warn:#FFB547;--bad:#FF6B7D;--purple:#B98CFF;
+  --grid:#223241;--c1:#5AAEFF;--c2:#FFB547;--c3:#3DD68C;--c4:#FF7EB6;--c5:#B98CFF;--c6:#2DD4BF;--ref:#6A8094;--tipbg:#0A121A;--hero1:#1B3552;--hero2:#16212C;--heroLine:#2C4A6A;
+  --okbg:rgba(61,214,140,.10);--okbd:rgba(61,214,140,.35);--oktx:#BDF3D7;
+  --wbg:rgba(255,181,71,.10);--wbd:rgba(255,181,71,.40);--wtx:#FFDDA8;
+  --rowalt:rgba(255,255,255,.025);--sel:rgba(90,174,255,.12);--hdr:rgba(14,22,32,.94);
+  --shadow:0 1px 0 rgba(255,255,255,.02);--r:16px;color-scheme:dark}
+[data-theme=light]{
+  --bg:#F3F5F8;--panel:#FFFFFF;--panel2:#EEF2F6;--line:#DDE4EB;--fg:#14202B;--fg2:#33424F;--mut:#5C6E7E;
+  --acc:#1D6FE0;--accfg:#FFFFFF;--up:#E0314A;--dn:#1F63D6;--ok:#11905A;--warn:#C27400;--bad:#D62B43;--purple:#7A4FD6;
+  --grid:#E6EBF0;--c1:#1D6FE0;--c2:#D98200;--c3:#11905A;--c4:#D6337A;--c5:#7A4FD6;--c6:#0E9488;--ref:#94A3B1;--tipbg:#FFFFFF;--hero1:#E3EEFC;--hero2:#FFFFFF;--heroLine:#C8DAF2;
+  --okbg:#E8F7EF;--okbd:#A7DFC2;--oktx:#0D6B43;--wbg:#FFF5E3;--wbd:#F2CF8E;--wtx:#7A4A00;
+  --rowalt:#F7F9FB;--sel:#E7F0FD;--hdr:rgba(243,245,248,.94);--shadow:0 1px 3px rgba(20,32,43,.06);color-scheme:light}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all}
+body{padding-bottom:calc(78px + env(safe-area-inset-bottom));transition:background .2s}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:10;background:var(--hdr);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 0 10px}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:8px}
+header h1{font-size:18px;margin:0;font-weight:800;letter-spacing:-.3px}
+header .d{font-size:12.5px;color:var(--mut);margin-top:1px}
+.hbtns{display:flex;gap:6px}
+.ver{font-size:11px;background:var(--panel2);color:var(--acc);border-radius:6px;padding:2px 6px;margin-left:6px;font-weight:700;vertical-align:2px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--hdr);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs .wrap{display:flex;padding:0 4px}
+nav.tabs button{flex:1;background:none;border:0;color:var(--mut);padding:9px 0 10px;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;font-family:inherit;min-height:56px}
+nav.tabs button span{font-size:20px;line-height:1}
+nav.tabs button.on{color:var(--acc)}
+section.page{display:none;padding:18px 0 24px}
+section.page.on{display:block}
+h2{font-size:21px;margin:2px 0 6px;font-weight:800;letter-spacing:-.4px}
+h3{font-size:16px;margin:0 0 10px;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sub{color:var(--mut);font-size:13.5px;margin:0 0 14px;line-height:1.55}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card>h3:first-child{margin-top:0}
+.card h3:not(:first-child){margin-top:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.grid2 .card{margin-bottom:0}
+.kpi .l{font-size:13px;color:var(--mut);font-weight:600}
+.kpi .v{font-size:23px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:4px;letter-spacing:-.4px;line-height:1.25}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:4px;line-height:1.45}
+.hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));border-color:var(--heroLine)}
+.hero .big{font-size:40px;font-weight:900;letter-spacing:-1px;line-height:1.15;margin-top:4px}
+.up{color:var(--up)}.dn{color:var(--dn)}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.mut{color:var(--mut)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);min-height:44px}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--fg2);font-size:14.5px;line-height:1.45}
+.row .k .mut{display:block;margin-top:2px}
+.row .v{font-weight:700;font-variant-numeric:tabular-nums;text-align:right;font-size:15px}
+.row.tot{border-top:2px solid var(--line);margin-top:6px;padding-top:12px}
+.row.tot .k{color:var(--fg);font-weight:700}
+.row.tot .v{font-size:18px}
+label.f{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;min-height:48px}
+label.f>span:first-child{color:var(--fg2);font-size:14.5px;flex:1;min-width:0}
+label.f>span:last-child:not(:first-child),label.f>select,label.f>input{flex:none}
+label.f>span:last-child:not(:first-child){display:flex;align-items:center;white-space:nowrap}
+input[type=number],input[type=text],input[type=url],input[type=date],select{background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:10px 12px;font-size:16px;font-family:inherit;width:124px;text-align:right;min-height:44px}
+select{width:auto;max-width:210px;text-align:left}
+input[type=date]{width:auto}
+input[type=url],input.wide{width:100%;text-align:left}
+input[type=checkbox]{width:22px!important;height:22px!important;accent-color:var(--acc)}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:1px}
+.unit{color:var(--mut);font-size:13px;margin-left:6px}
+.btn{background:var(--acc);color:var(--accfg);border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:inherit;min-height:44px}
+.btn.ghost{background:var(--panel2);color:var(--fg);border:1px solid var(--line)}
+.btn.icon{padding:6px 10px;font-size:13px;min-height:36px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:flex;background:var(--panel2);border-radius:12px;padding:4px;gap:4px;margin:4px 0 14px}
+.seg button{flex:1;background:none;border:0;color:var(--mut);padding:9px 6px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;min-height:40px}
+.seg button.on{background:var(--panel);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--panel2);color:var(--mut)}
+.sig{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.sig:last-child{border-bottom:0}
+.dot{width:12px;height:12px;border-radius:50%;margin-top:6px;flex:none}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+.sig .t{font-weight:700;font-size:15px}.sig .x{font-size:13.5px;color:var(--mut);margin-top:2px;line-height:1.5}
+.tw{overflow-x:auto;margin:0 -16px;padding:0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{color:var(--mut);font-weight:700;font-size:12.5px;background:var(--panel)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel);z-index:1;font-weight:600}
+tr.me td,tr.me td:first-child{background:var(--sel)!important}
+tbody tr{cursor:pointer}
+.chart{position:relative;width:100%;margin-top:4px}
+.chart svg{display:block;width:100%;height:auto}
+.chart text{fill:var(--mut);font-size:12px}
+.tip{position:absolute;pointer-events:none;background:var(--tipbg);border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:13px;line-height:1.5;white-space:nowrap;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.22);color:var(--fg)}
+.tip>div:first-child{font-weight:700;margin-bottom:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--fg2);margin-top:10px}
+.legend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tl{position:relative;padding-left:22px}
+.tl:before{content:"";position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.tl .it{position:relative;padding:2px 0 16px}
+.tl .it:last-child{padding-bottom:2px}
+.tl .it:before{content:"";position:absolute;left:-21px;top:7px;width:12px;height:12px;border-radius:50%;background:var(--panel);border:2px solid var(--acc)}
+.tl .it.past:before{background:var(--acc)}
+.tl .it.key:before{border-color:var(--warn);background:var(--warn)}
+.tl .dt{font-size:13px;color:var(--acc);font-weight:800}
+.tl .it.key .dt{color:var(--warn)}
+.tl .ti{font-weight:700;font-size:15px;margin-top:1px}
+.tl .de{font-size:13.5px;color:var(--mut)}
+.chk{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.chk:last-child{border-bottom:0}
+.chk input{flex:none;margin-top:2px;accent-color:var(--ok)}
+.chk .ct{font-size:15px;font-weight:600}
+.chk.done .ct{text-decoration:line-through;color:var(--mut);font-weight:500}
+.chk .cd{font-size:13px;color:var(--mut);margin-top:1px}
+.plan{border-left:5px solid var(--acc)}
+.plan h4{margin:0 0 3px;font-size:17px;font-weight:800}
+.plan .meta{font-size:13px;color:var(--mut);margin-bottom:6px}
+.note{font-size:13px;color:var(--mut);line-height:1.6;margin-top:10px}
+.warnbox,.okbox{border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.55;margin:10px 0 0}
+.warnbox{background:var(--wbg);border:1px solid var(--wbd);color:var(--wtx)}
+.okbox{background:var(--okbg);border:1px solid var(--okbd);color:var(--oktx)}
+details summary{cursor:pointer;color:var(--acc);font-size:14px;font-weight:600;padding:8px 0}
+a{color:var(--acc)}
+.links{margin-top:10px}
+.links a{display:inline-block;margin:4px 10px 0 0;font-size:14px;font-weight:600;text-decoration:none;padding:6px 12px;border:1px solid var(--line);border-radius:999px}
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--tipbg);color:var(--fg);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:14px;display:none;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.bar{height:8px;border-radius:5px;background:var(--panel2);overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:5px}
+.chips{display:flex;flex-wrap:nowrap;gap:7px;overflow-x:auto;margin:0 -16px;padding:2px 16px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none}
+.chipl{font-size:12.5px;color:var(--mut);font-weight:600;margin:14px 0 6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);color:var(--fg2);border-radius:999px;padding:7px 12px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;min-height:36px}
+.chip i{width:9px;height:9px;border-radius:50%;background:var(--line);flex:none}
+.chip.on{background:var(--panel2);color:var(--fg);border-color:var(--fg2)}
+.seg.sm button{padding:6px 4px;font-size:13px;min-height:34px}
+td .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:0;background:transparent;border:1.5px solid var(--line)}
+th.sort{cursor:pointer;user-select:none}
+th.sort.on{color:var(--acc)}
+@media (max-width:360px){.grid2{grid-template-columns:1fr}.kpi .v{font-size:21px}}
+@media (prefers-reduced-motion:no-preference){.card,.seg button{transition:background .2s,color .2s}}
 </style>
 </head>
 <body>
+<header><div class="wrap"><div><h1>🏠 갈아타기 전략 노트<span class="ver">v5</span></h1><div class="d" id="hdrDate">—</div></div><div class="hbtns"><button class="btn ghost icon" id="themeBtn" aria-label="화면 모드 바꾸기">🌓 자동</button><button class="btn ghost icon" id="shareBtn">공유</button></div></div></header>
 
-<!-- Android 설치 배너 -->
-<div id="install-banner">
-  <div class="ib-icon">🏠</div>
-  <div class="ib-text">
-    <div class="ib-title">앱으로 설치하기</div>
-    <div class="ib-sub">홈 화면에 추가하면 앱처럼 실행됩니다</div>
+<main class="wrap">
+<!-- ===== 홈 ===== -->
+<section class="page on" id="p-home">
+  <div class="card hero">
+    <div class="kpi"><div class="l">연우 초등 입학 전입 마감 (2028.11)</div><div class="big" id="ddayBig">D-—</div><div class="s" id="ddaySub">—</div></div>
+    <div class="bar"><i id="ddayBar" style="width:0"></i></div>
   </div>
-  <button class="ib-btn" id="install-btn">설치</button>
-  <button class="ib-close" onclick="dismissBanner()">✕</button>
-</div>
-
-<!-- iOS 설치 가이드 토스트 -->
-<div id="ios-toast">
-  <div class="ios-toast-title">📲 iPhone 홈 화면에 앱으로 추가하기</div>
-  <div class="ios-toast-step"><div class="ios-toast-num">1</div><div>아래 <strong>공유 버튼</strong> (□↑) 을 탭하세요</div></div>
-  <div class="ios-toast-step"><div class="ios-toast-num">2</div><div><strong>"홈 화면에 추가"</strong> 를 선택하세요</div></div>
-  <div class="ios-toast-step"><div class="ios-toast-num">3</div><div>오른쪽 위 <strong>"추가"</strong> 를 탭하면 완료!</div></div>
-  <button class="ios-toast-close" onclick="g('ios-toast').classList.remove('show')">닫기</button>
-</div>
-
-<div class="header">
-  <div class="header-inner">
-    <div>
-      <div class="header-title">🏠 갈아타기 전략 노트</div>
-      <div class="header-sub" id="hdr-date">로드 중...</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button class="install-btn" id="ios-install-btn" onclick="showIosGuide()">📲 앱 설치</button>
-      <span class="hbadge">v4</span>
-    </div>
-  </div>
-</div>
-
-<div class="content">
-
-<!-- ① 자산 현황 -->
-<div id="page-summary" class="page active">
-  <div class="page-title">자산 현황</div>
-  <div class="page-sub">수치를 직접 탭해서 수정하세요</div>
-  <div class="edit-hint">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-    모든 숫자를 직접 수정 → 전체 자동 계산 · 자동 저장
-  </div>
-  <div class="mgrid">
-    <div class="metric"><div class="metric-lbl">희망 매도가</div><div class="metric-val cb" id="m-sellprice">—</div></div>
-    <div class="metric"><div class="metric-lbl">주담대 잔액</div><div class="metric-val cr" id="m-debt">—</div></div>
-    <div class="metric"><div class="metric-lbl">매도 차액</div><div class="metric-val cg" id="m-net">—</div></div>
-    <div class="metric"><div class="metric-lbl">총 가용 자산</div><div class="metric-val cb" id="m-total">—</div></div>
+  <div class="grid2">
+    <div class="card kpi"><div class="l">현재집 시세 (59㎡ 중앙값)</div><div class="v" id="hHouse">—</div><div class="s" id="hHouseS">—</div></div>
+    <div class="card kpi"><div class="l">매도 시 순현금</div><div class="v" id="hNet">—</div><div class="s">희망 매도가 − 주담대</div></div>
+    <div class="card kpi"><div class="l">즉시가용 자산</div><div class="v" id="hCash">—</div><div class="s" id="hCashS">—</div></div>
+    <div class="card kpi"><div class="l">총 자기자금</div><div class="v" id="hEq">—</div><div class="s">순현금 + 즉시가용 + 옵션</div></div>
   </div>
   <div class="card">
-    <div class="card-hd">현재 주택</div>
-    <div class="card-bd">
-      <div class="erow"><span class="erow-label">단지명</span><div class="erow-right"><input class="txt-input" id="e-aptname" value="덕소 대성코오롱" oninput="saveAndRefresh()"></div></div>
-      <div class="erow"><span class="erow-label">면적</span><div class="erow-right"><input class="txt-input" id="e-area" value="59.94㎡" oninput="saveAndRefresh()" style="width:100px"></div></div>
-      <div class="erow"><span class="erow-label">매수 시기</span><div class="erow-right"><input class="txt-input" id="e-buytime" value="2021년 9월" oninput="saveAndRefresh()" style="width:110px"></div></div>
-      <div class="erow"><span class="erow-label">매수 금액 (만원)</span><div class="erow-right"><input class="num-input wide" id="e-buyprice" type="number" value="49000" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">인테리어 비용 (만원)</span><div class="erow-right"><input class="num-input" id="e-interior" type="number" value="3000" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">취득세·중개비 (만원)</span><div class="erow-right"><input class="num-input" id="e-acqtax" type="number" value="1150" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">취득 원가 (자동)</span><div class="erow-right"><span class="rv cb" id="e-cost">—</span></div></div>
-      <div class="erow"><span class="erow-label">희망 매도가 (만원)</span><div class="erow-right"><input class="num-input wide" id="e-sellprice" type="number" value="50000" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">현 매물가 범위</span><div class="erow-right"><input class="txt-input" id="e-mktprice" value="4억~4.5억" oninput="saveAndRefresh()" style="width:110px"></div></div>
-      <div class="erow"><span class="erow-label">최근 실거래가 (만원)</span><div class="erow-right"><input class="num-input wide" id="e-lasttrade" type="number" value="41500" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">역대 최고가 (만원)</span><div class="erow-right"><input class="num-input wide" id="e-maxprice" type="number" value="52500" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">주담대 잔액 (만원)</span><div class="erow-right"><input class="num-input wide" id="e-debt" type="number" value="24800" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">대출 금리 (%)</span><div class="erow-right"><input class="num-input" id="e-rate" type="number" step="0.001" value="3.469" oninput="saveAndRefresh()"><span class="erow-unit">%</span></div></div>
-      <div class="erow"><span class="erow-label">대출 만기</span><div class="erow-right"><input class="txt-input" id="e-rateend" value="2029년까지" oninput="saveAndRefresh()" style="width:110px"></div></div>
-      <div class="erow"><span class="erow-label">월 이자 (만원)</span><div class="erow-right"><input class="num-input" id="e-monthint" type="number" value="72" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">월 원금 (만원)</span><div class="erow-right"><input class="num-input" id="e-monthprin" type="number" value="20" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">월 상환 합계 (자동)</span><div class="erow-right"><span class="rv cr" id="e-monthpay">—</span></div></div>
-    </div>
+    <h3 style="margin-top:0">경기 하락전환 신호 <span class="pill" id="sigAsof">—</span></h3>
+    <div id="sigList"></div>
+    <div class="note" id="sigVerdict"></div>
   </div>
   <div class="card">
-    <div class="card-hd">가용 자산 내역</div>
-    <div class="card-bd">
-      <div class="erow"><span class="erow-label">마이너스 통장 (만원)</span><div class="erow-right"><input class="num-input" id="e-minus" type="number" value="5000" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">투자자산 주식·금·BTC (만원)</span><div class="erow-right"><input class="num-input" id="e-invest" type="number" value="8900" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">주택청약 (만원)</span><div class="erow-right"><input class="num-input" id="e-sub" type="number" value="1400" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">무매법 (만원)</span><div class="erow-right"><input class="num-input" id="e-infinite" type="number" value="1000" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">연금저축 (만원)</span><div class="erow-right"><input class="num-input" id="e-pension" type="number" value="7300" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">퇴직금 예상 (만원)</span><div class="erow-right"><input class="num-input" id="e-retire" type="number" value="3000" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">현금 가용 합계 (자동)</span><div class="erow-right"><span class="rv cg" id="e-avail-cash">—</span></div></div>
-      <div class="erow"><span class="erow-label" style="font-size:11px;color:var(--text3)">※ 마이너스통장+투자+청약+무매법 (연금·퇴직금 제외)</span></div>
-    </div>
+    <h3 style="margin-top:0">2021년 대비 갭 변화가 가장 작은 단지</h3>
+    <div id="homeGap"></div>
+    <div class="note">현재집 59㎡ 대비 가격차: 2021년 평균 갭 → 현재 갭. 괄호는 그 변화.</div>
   </div>
   <div class="card">
-    <div class="card-hd">월 소득 / 지출 (부부합산)</div>
-    <div class="card-bd">
-      <div class="erow"><span class="erow-label">월 소득 (만원)</span><div class="erow-right"><input class="num-input" id="e-income" type="number" value="873" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">월 저축·투자 (만원)</span><div class="erow-right"><input class="num-input" id="e-save" type="number" value="425" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">월 지출 (대출 외, 만원)</span><div class="erow-right"><input class="num-input" id="e-spend" type="number" value="376" oninput="saveAndRefresh()"><span class="erow-unit">만</span></div></div>
-      <div class="erow"><span class="erow-label">여력 확인 (자동)</span><div class="erow-right"><span class="rv" id="e-surplus">—</span></div></div>
-    </div>
+    <h3 style="margin-top:0">다음 할 일</h3>
+    <div id="homeTodo"></div>
+    <div class="note"><a href="#" data-go="p-plan">체크리스트 전체 보기 →</a></div>
   </div>
   <div class="card">
-    <div class="card-hd">가족 / 일정</div>
-    <div class="card-bd">
-      <div class="erow"><span class="erow-label">자녀 이름</span><div class="erow-right"><input class="txt-input" id="e-child" value="하연우" oninput="saveAndRefresh()" style="width:100px"></div></div>
-      <div class="erow"><span class="erow-label">자녀 출생연도</span><div class="erow-right"><input class="num-input" id="e-birthyear" type="number" value="2022" oninput="saveAndRefresh()"><span class="erow-unit">년</span></div></div>
-      <div class="erow"><span class="erow-label">초등 입학 예정 (자동)</span><div class="erow-right"><span class="rv ca" id="e-school">—</span></div></div>
-      <div class="erow"><span class="erow-label">남편 직장</span><div class="erow-right"><input class="txt-input" id="e-work1" value="강남 자곡동" oninput="saveAndRefresh()" style="width:120px"></div></div>
-      <div class="erow"><span class="erow-label">아내 직장</span><div class="erow-right"><input class="txt-input" id="e-work2" value="종합운동장역" oninput="saveAndRefresh()" style="width:120px"></div></div>
+    <h3 style="margin-top:0">전략 타임라인</h3>
+    <div class="tl" id="timeline"></div>
+  </div>
+</section>
+
+<!-- ===== 매도 ===== -->
+<section class="page" id="p-sell">
+  <h2>덕소 매도 타이밍</h2>
+  <p class="sub">강산마을 대성코오롱 59.94㎡ · 매도 게이트 2027 · 트리거 <b id="trigLbl">4.5억</b></p>
+  <div class="card">
+    <h3 style="margin-top:0">현재집 59㎡ 실거래 시세 (2015~)</h3>
+    <div class="chart" id="chHouse"></div>
+    <div class="legend"><span><i style="background:var(--acc)"></i>6개월 이동 중앙값</span><span><i style="background:var(--warn)"></i>매도 트리거</span><span><i style="background:var(--mut)"></i>매수가 4.9억</span></div>
+    <div class="tw" style="margin-top:10px"><table><thead><tr><th>최근 거래</th><th>층</th><th>거래가</th></tr></thead><tbody id="houseLast"></tbody></table></div>
+    <div class="note" id="houseNote"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">매도 트리거 점검</h3>
+    <label class="f"><span>매도 트리거 가격</span><span><input type="number" id="in-trigger" step="500"><span class="unit">만</span></span></label>
+    <div id="trigCheck"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">주간 신호 상세 (한국부동산원)</h3>
+    <p class="sub" style="margin-top:0">주간 매매가격 변동률 %, 최근 8주</p>
+    <div class="tw"><table id="wkTable"></table></div>
+    <h3>매매수급지수 (100 미만 = 매도자 우위)</h3>
+    <div class="chart" id="chSupply"></div>
+    <div class="legend" id="lgSupply"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">지수 추이 (2018.12 = 100)</h3>
+    <div class="seg" id="segIdx"></div>
+    <div class="chart" id="chIdx"></div>
+    <div class="legend" id="lgIdx"></div>
+    <div class="note">과거 패턴: 고가주택 규제로 강남만 내린 2020년엔 경기가 2년 더 올랐고(풍선효과), 금리·전체 대출이 조인 2018·2022년엔 경기가 함께, 더 깊게 내렸습니다. 2022년 남양주는 고점(1월) 대비 −18.9%, 바닥은 2023년 12월로 가장 늦었습니다.</div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">덕소 공급 압력</h3>
+    <div class="row"><span class="k">라온프라이빗 리버포레 입주</span><span class="v">2028.03 · 999세대</span></div>
+    <div class="row"><span class="k">덕소3구역 자이푸르지오 더 리버시티</span><span class="v">2029.03 · 3,308세대</span></div>
+    <div class="row"><span class="k">현재집 고정금리 만료</span><span class="v">2029</span></div>
+    <div class="note">대규모 입주 전후 구축 매매·전세 압박 가능. 매도는 라온 입주(2028.3) 이전이 핵심.</div>
+  </div>
+</section>
+
+<!-- ===== 갭 ===== -->
+<section class="page" id="p-gap">
+  <h2>목표 단지 갭 추적</h2>
+  <p class="sub">현재집(대성코오롱 59㎡)과 목표 단지의 실거래 시세 차이 · 2015.01~<span id="gapAsof">—</span> · 월별 6개월 이동 중앙값</p>
+  <div class="seg" id="segPt"><button data-pt="59" class="on">59㎡ (24평)</button><button data-pt="84">84㎡ (34평)</button></div>
+  <div class="card">
+    <div class="seg" id="segMode"><button data-v="gap">갭 (목표 − 현재집)</button><button data-v="price">가격 비교</button></div>
+    <div class="seg sm" id="segPeriod"><button data-v="2015">2015~</button><button data-v="2019">2019~</button><button data-v="3y">최근 3년</button></div>
+    <div class="chart" id="chGap"></div>
+    <div class="legend" id="lgGap"></div>
+    <label class="f" style="min-height:40px;padding:2px 0"><span>개별 실거래 점 표시</span><input type="checkbox" id="in-dots"></label>
+    <div class="chipl">비교 단지 선택 (최대 6개) · 옆으로 밀어서 더 보기</div>
+    <div class="chips" id="gapChips"></div>
+    <div class="note" id="gapNote"></div>
+    <div class="links" id="gapLinks"></div>
+  </div>
+  <div class="card">
+    <h3 id="yrTitle">연도별 비교</h3>
+    <p class="sub" id="yrSub"></p>
+    <div class="tw"><table id="yrTable"></table></div>
+  </div>
+  <div class="card">
+    <h3>단지별 갭 비교 <span class="pill" id="gapSortLbl"></span></h3>
+    <p class="sub">행을 누르면 위 그래프에 추가·제거됩니다(최대 6개). 열 제목을 누르면 정렬됩니다.</p>
+    <div class="tw"><table id="gapTable2"></table></div>
+    <div class="note">‘최근 시세’는 최근 3개월 실거래 중앙값(5건 이상), 부족하면 6개월 중앙값에 지역 부동산원 지수를 반영한 추정치(＊). ‘21년 갭’·‘23년 갭’은 그해 월별 갭의 평균(21년 상승장 고점, 23년 하락장 바닥), ‘현재 갭’은 최근 시세 차이. 변화가 음수(초록)면 그때보다 따라잡기 쉬워진 것입니다. ‘최저 갭’은 2019년 이후 갭이 가장 좁았던 때.</div>
+  </div>
+</section>
+
+<!-- ===== 자금 ===== -->
+<section class="page" id="p-money">
+  <h2>자금 · 대출 · DSR</h2>
+  <div class="card">
+    <h3 style="margin-top:0">자산 불러오기</h3>
+    <div class="seg" id="segSrc"><button data-src="sheet">구글 시트 연동</button><button data-src="manual">직접 입력</button></div>
+    <div id="srcSheet">
+      <input type="url" id="in-sheetUrl" placeholder="웹에 게시한 '주간스냅샷' CSV 주소">
+      <div class="btns" style="margin-top:8px"><button class="btn" id="btnSync">불러오기</button><span class="mut" id="syncMsg" style="font-size:12.5px;align-self:center"></span></div>
+      <details style="margin-top:6px"><summary>시트 연결 방법</summary><div class="note">포트폴리오 시트 → 파일 → 공유 → <b>웹에 게시</b> → ‘주간스냅샷’ 시트 · CSV 선택 → 게시 → 주소 복사 후 위 칸에 붙여넣기. 앱은 ‘즉시가용’ 행에서 가장 최근 날짜 값을 읽습니다.<br>⚠ 웹에 게시하면 주소를 아는 사람은 누구나 그 시트를 볼 수 있습니다. 공유가 꺼려지면 ‘직접 입력’을 쓰세요.</div></details>
+    </div>
+    <label class="f"><span>즉시가용 자산</span><span><input type="number" id="in-cash" step="100"><span class="unit">만</span></span></label>
+    <div class="note" id="cashNote"></div>
+    <label class="f"><span>연금저축 (담보대출 60%)</span><span><input type="number" id="in-pension" step="100"><span class="unit">만</span></span></label>
+    <label class="f"><span>퇴직금 예상</span><span><input type="number" id="in-retire" step="100"><span class="unit">만</span></span></label>
+    <label class="f"><span>연금담보·퇴직금 포함</span><input type="checkbox" id="in-useOpt" style="width:20px;height:20px"></label>
+    <label class="f"><span>월 저축 가능액</span><span><input type="number" id="in-save" step="10"><span class="unit">만</span></span></label>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">현재집</h3>
+    <label class="f"><span>희망 매도가</span><span><input type="number" id="in-sell" step="500"><span class="unit">만</span></span></label>
+    <label class="f"><span>주담대 잔액</span><span><input type="number" id="in-debt" step="100"><span class="unit">만</span></span></label>
+    <label class="f"><span>매도 시점</span><select id="in-when"><option value="2026">2026년 말</option><option value="2027">2027년 말</option><option value="2028">2028년 초</option></select></label>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">목표 주택 · 대출 조건</h3>
+    <label class="f"><span>목표 매수가</span><span><input type="number" id="in-buy" step="500"><span class="unit">만</span></span></label>
+    <label class="f"><span>전용 85㎡ 초과</span><input type="checkbox" id="in-big" style="width:20px;height:20px"></label>
+    <label class="f"><span>지역 규제</span><select id="in-zone"><option value="free">비규제 (LTV 70%)</option><option value="reg">규제지역 (LTV 40%)</option></select></label>
+    <label class="f"><span>수도권 주담대 6억 한도</span><input type="checkbox" id="in-cap" style="width:20px;height:20px"></label>
+    <label class="f"><span>대출 금리</span><span><input type="number" id="in-rate" step="0.05"><span class="unit">%</span></span></label>
+    <label class="f"><span>스트레스 가산금리</span><span><input type="number" id="in-stress" step="0.25"><span class="unit">%p</span></span></label>
+    <label class="f"><span>대출 기간</span><span><input type="number" id="in-term" step="5"><span class="unit">년</span></span></label>
+    <label class="f"><span>부부 연소득 (세전)</span><span><input type="number" id="in-income" step="100"><span class="unit">만</span></span></label>
+    <label class="f"><span>기타 대출 연상환액</span><span><input type="number" id="in-other" step="50"><span class="unit">만</span></span></label>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">계산 결과</h3>
+    <div id="moneyOut"></div>
+    <div id="moneyWarn"></div>
+    <div class="note">규제 기준(LTV·6억 한도·스트레스 DSR)은 2025년 하반기 정책 기준이며 바뀔 수 있습니다. 실제 한도는 은행 가조회로 확인하세요.</div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">시나리오표: 필요 대출 / DSR</h3>
+    <p class="sub" style="margin-top:0">행 = 현재집 매도가, 열 = 목표 매수가 (위 조건 기준)</p>
+    <div class="tw"><table id="scTable"></table></div>
+  </div>
+</section>
+
+<!-- ===== 플랜·세금 ===== -->
+<section class="page" id="p-plan">
+  <h2>플랜 비교 · 세금 · 체크리스트</h2>
+  <div class="seg" id="segPlan"><button data-v="plans" class="on">플랜</button><button data-v="tax">세금</button><button data-v="check">체크리스트</button></div>
+  <div id="v-plans"></div>
+  <div id="v-tax" hidden>
+    <div class="card">
+      <h3 style="margin-top:0">현재집 양도세 (1세대1주택 비과세 점검)</h3>
+      <label class="f"><span>취득일</span><input type="date" id="in-acqDate"></label>
+      <label class="f"><span>양도 예정일</span><input type="date" id="in-saleDate"></label>
+      <label class="f"><span>취득 당시 조정대상지역</span><input type="checkbox" id="in-adj" style="width:20px;height:20px"></label>
+      <label class="f"><span>실거주 기간</span><span><input type="number" id="in-live" step="0.5"><span class="unit">년</span></span></label>
+      <div id="cgtOut"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">일시적 2주택 (분양권·새집 먼저 살 때)</h3>
+      <label class="f"><span>새 주택/분양권 취득일</span><input type="date" id="in-newDate"></label>
+      <label class="f"><span>새 주택이 분양권</span><input type="checkbox" id="in-isRight" style="width:20px;height:20px"></label>
+      <label class="f"><span>신축 완공(입주) 예정</span><input type="date" id="in-doneDate"></label>
+      <div id="tmpOut"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">취득 비용 (목표 매수가 기준)</h3>
+      <div id="acqOut"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">분양권 전매 양도세</h3>
+      <div class="row"><span class="k">보유 1년 미만</span><span class="v">77% (70% + 지방세)</span></div>
+      <div class="row"><span class="k">보유 1년 이상</span><span class="v">66% (60% + 지방세)</span></div>
+      <div class="note">‘손피’(매도인 세금을 매수인이 부담) 거래면 실제 프리미엄은 P + 매도인 세금. 예: P 2,000만 → 매수인 부담 약 3,155만.</div>
+    </div>
+    <div class="note">세금 계산은 일반 규정을 단순화한 참고값입니다. 일시적 2주택·분양권 특례는 요건이 복잡하니 계약 전 세무사 확인을 권합니다.</div>
+  </div>
+  <div id="v-check" hidden>
+    <div class="card"><div id="checkList"></div>
+      <div class="btns" style="margin-top:10px"><input type="text" id="in-newTodo" class="wide" placeholder="할 일 추가"><button class="btn" id="btnAddTodo">추가</button></div>
     </div>
   </div>
-</div>
+</section>
+</main>
 
-<!-- ② 시나리오 -->
-<div id="page-scenario" class="page">
-  <div class="page-title">시나리오 비교</div>
-  <div class="page-sub">5가지 갈아타기 전략</div>
-  <div class="alert alert-r" id="sc-deadline">⏰ 핵심 마감</div>
-  <div class="sc" id="sc-A"><div class="sc-hd" onclick="toggleSc('A')"><div class="sc-icon" style="background:var(--blue-dim)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--blue)" stroke-width="1.7"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="sc-info"><div class="sc-name">A — 구리·다산 갈아타기</div><div class="sc-desc">실거주 업그레이드 · 8억대 준신축</div></div><svg class="sc-chev" viewBox="0 0 24 24" width="18" height="18"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" fill="none"/></svg></div><div class="sc-bd"><div class="pbar"><div class="pfill" style="width:70%;background:var(--blue)"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px;margin-bottom:12px">실현 가능성 70%</div><div class="row"><span class="rl">구리 인창 e편한세상 59㎡</span><span class="rv cb">8억 2,000만</span></div><div class="row"><span class="rl">다산 한강반도유보라 84㎡</span><span class="rv cb">8억 8,000만</span></div><div class="row"><span class="rl">다산 e편한세상자이 59㎡</span><span class="rv cb">8억 8,000만</span></div><div class="row"><span class="rl">성남 한신 59㎡</span><span class="rv cb">8억</span></div><div class="row"><span class="rl">하남 신장에코타운 59㎡</span><span class="rv cb">8억 8,000만</span></div><div class="row"><span class="rl">★ 구리 한일베라체</span><span class="rv ca">9억 이상</span></div><div class="rbox"><div class="rrow"><span style="color:var(--text2)">총 가용 자산</span><span class="cb" id="sc-a-avail">—</span></div><div class="rrow tot"><span>5억 대출 시 월 상환</span><span class="cr">268만원</span></div></div></div></div>
-  <div class="sc" id="sc-B"><div class="sc-hd" onclick="toggleSc('B')"><div class="sc-icon" style="background:var(--green-dim)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--green)" stroke-width="1.7"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div class="sc-info"><div class="sc-name">B — 덕소 라온 분양/입주권</div><div class="sc-desc">현 생활권 유지 · 2028년 신축 입주</div></div><svg class="sc-chev" viewBox="0 0 24 24" width="18" height="18"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" fill="none"/></svg></div><div class="sc-bd"><div class="pbar"><div class="pfill" style="width:55%;background:var(--green)"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px;margin-bottom:12px">실현 가능성 55%</div><div class="row"><span class="rl">B-1 84㎡ 13층 (분양권)</span><span class="rv">약 8억 9,653만</span></div><div class="row"><span class="rl">B-2 59㎡ 6층 (분양권)</span><span class="rv">약 6억 4,330만</span></div><div class="row"><span class="rl">★ B-3 59㎡ 17층 (입주권)</span><span class="rv cg">약 5억 4,250만</span></div><div class="row"><span class="rl">입주 시기</span><span class="rv">2028년 3월</span></div><div class="row"><span class="rl">입주 전 월세</span><span class="rv ca">스타힐스 5,000/월 180만</span></div><div class="rbox"><div class="rrow tot"><span>총합 최저가 옵션</span><span class="cg">B-3 추천</span></div></div></div></div>
-  <div class="sc" id="sc-C"><div class="sc-hd" onclick="toggleSc('C')"><div class="sc-icon" style="background:var(--amber-dim)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--amber)" stroke-width="1.7"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></div><div class="sc-info"><div class="sc-name">C — 갭투자 후 덕소 월세</div><div class="sc-desc">투자·거주 분리 전략</div></div><svg class="sc-chev" viewBox="0 0 24 24" width="18" height="18"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" fill="none"/></svg></div><div class="sc-bd"><div class="pbar"><div class="pfill" style="width:40%;background:var(--amber)"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px;margin-bottom:12px">실현 가능성 40%</div><div class="row"><span class="rl">대상 지역</span><span class="rv">구리·하남·성남</span></div><div class="row"><span class="rl">장점</span><span class="rv cg">자본 증식 유리</span></div><div class="row"><span class="rl">리스크</span><span class="rv cr">역전세 위험</span></div></div></div>
-  <div class="sc" id="sc-D"><div class="sc-hd" onclick="toggleSc('D')"><div class="sc-icon" style="background:var(--gray-dim)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--text2)" stroke-width="1.7"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div><div class="sc-info"><div class="sc-name">D — 재개발 투자 후 월세</div><div class="sc-desc">덕소 3구역 / 수택 2구역</div></div><svg class="sc-chev" viewBox="0 0 24 24" width="18" height="18"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" fill="none"/></svg></div><div class="sc-bd"><div class="pbar"><div class="pfill" style="width:30%;background:var(--text3)"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px;margin-bottom:12px">실현 가능성 30%</div><div class="row"><span class="rl">덕소 3구역</span><span class="rv">자이푸르지오 더 리버시티</span></div><div class="row"><span class="rl">총 세대수</span><span class="rv">3,308세대</span></div><div class="row"><span class="rl">예상 입주</span><span class="rv ca">2029년 3월</span></div></div></div>
-  <div class="sc" id="sc-E"><div class="sc-hd" onclick="toggleSc('E')"><div class="sc-icon" style="background:var(--red-dim)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--red)" stroke-width="1.7"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sc-info"><div class="sc-name">E — 매도 후 월세 + 주식</div><div class="sc-desc">고위험 · 자산 증식 극대화</div></div><svg class="sc-chev" viewBox="0 0 24 24" width="18" height="18"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" fill="none"/></svg></div><div class="sc-bd"><div class="pbar"><div class="pfill" style="width:20%;background:var(--red)"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px;margin-bottom:12px">실현 가능성 20%</div><div class="row"><span class="rl">이주 대상</span><span class="rv">스타힐스 104동 10층</span></div><div class="row"><span class="rl">보증금 / 월세</span><span class="rv">5,000만 / 월 180만</span></div><div class="row"><span class="rl">투자 가능 자금</span><span class="rv cg" id="sc-e-invest">—</span></div></div></div>
-</div>
-
-<!-- ③ 계산기 -->
-<div id="page-calc" class="page">
-  <div class="page-title">가용자산 계산기</div>
-  <div class="page-sub">매도 시기별 움직일 수 있는 돈</div>
-  <div class="ctab-wrap">
-    <button class="ctab on" id="ctab-asset" onclick="switchCalcTab('asset')">시기별 가용자산</button>
-    <button class="ctab off" id="ctab-loan" onclick="switchCalcTab('loan')">대출 계산기</button>
-  </div>
-  <div id="panel-asset">
-    <div class="card"><div class="card-hd">추가 조건</div><div class="card-bd">
-      <div class="sblock"><div class="shead"><span class="slbl">집 매도가 (현황 연동)</span><span class="sval" id="as-sell-lbl">—</span></div><input type="range" id="as-sell" min="35000" max="55000" step="500" value="50000" oninput="calcAsset()"></div>
-      <div class="sblock"><div class="shead"><span class="slbl">월 저축·수익 (현황 연동)</span><span class="sval" id="as-save-lbl">—</span></div><input type="range" id="as-save" min="100" max="800" step="25" value="425" oninput="calcAsset()"></div>
-      <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin:4px 0 10px">추가 옵션</div>
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px"><input type="checkbox" id="opt-pension" onchange="calcAsset()" style="width:18px;height:18px;accent-color:var(--blue)"><span style="font-size:13px;color:var(--text2)">연금저축 담보대출 <span id="opt-pension-amt" class="ca"></span></span></label>
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" id="opt-retire" onchange="calcAsset()" style="width:18px;height:18px;accent-color:var(--blue)"><span style="font-size:13px;color:var(--text2)">퇴직금 중간정산 <span id="opt-retire-amt" class="ca"></span></span></label>
-    </div></div>
-    <div class="ytime-card y26"><div class="ytime-hd"><span class="ytime-title cx">2026년 · 현재</span><span class="badge bx">즉시 매도</span></div><div class="ytime-bd"><div class="rbox" style="margin-top:0"><div class="rrow"><span style="color:var(--text2)">집 판 돈 (주담대 제외)</span><span id="y26-house">—</span></div><div class="rrow"><span style="color:var(--text2)">현금 가용 자산</span><span id="y26-cash">—</span></div><div class="rrow" id="y26-opt-row" style="display:none"><span class="ca">옵션 추가</span><span id="y26-opt">—</span></div><div class="rrow tot"><span>합계</span><span id="y26-total" class="cx">—</span></div><div style="font-size:11px;color:var(--text3);margin-top:6px" id="y26-note"></div></div></div></div>
-    <div class="ytime-card y27"><div class="ytime-hd"><span class="ytime-title ca">2027년 · 전략적 최적 ★</span><span class="badge ba">추천</span></div><div class="ytime-bd"><div class="rbox" style="margin-top:0"><div class="rrow"><span style="color:var(--text2)">집 판 돈 (주담대 제외)</span><span id="y27-house">—</span></div><div class="rrow"><span style="color:var(--text2)">금융자산 (현재+12개월)</span><span id="y27-fin">—</span></div><div class="rrow" id="y27-opt-row" style="display:none"><span class="ca">옵션 추가</span><span id="y27-opt">—</span></div><div class="rrow tot"><span>합계</span><span id="y27-total" class="ca">—</span></div><div style="font-size:11px;color:var(--text3);margin-top:6px" id="y27-note"></div></div><div style="background:var(--amber-dim);border-radius:var(--radius-sm);padding:9px 11px;margin-top:10px;font-size:12px;color:var(--amber);line-height:1.6">라온 999세대 입주(2028.03) 전 공급 압박 前 최대 차액 확보 가능</div></div></div>
-    <div class="ytime-card y28"><div class="ytime-hd"><span class="ytime-title cb">2028년 · 라온 입주 전후</span><span class="badge bb">초등 1년 전</span></div><div class="ytime-bd"><div class="rbox" style="margin-top:0"><div class="rrow"><span style="color:var(--text2)">집 판 돈 (주담대 제외)</span><span id="y28-house">—</span></div><div class="rrow"><span style="color:var(--text2)">금융자산 (현재+24개월)</span><span id="y28-fin">—</span></div><div class="rrow" id="y28-opt-row" style="display:none"><span class="ca">옵션 추가</span><span id="y28-opt">—</span></div><div class="rrow tot"><span>합계</span><span id="y28-total" class="cb">—</span></div><div style="font-size:11px;color:var(--text3);margin-top:6px" id="y28-note"></div></div><div style="background:var(--red-dim);border-radius:var(--radius-sm);padding:9px 11px;margin-top:10px;font-size:12px;color:var(--red);line-height:1.6">⚠ 라온 대규모 입주 → 덕소 구축 시세 하락 압박 가능</div></div></div>
-    <div class="card"><div class="card-hd">신규 주담대 포함 매수 예산</div><div class="card-bd">
-      <div class="sblock" style="margin-bottom:0"><div class="shead"><span class="slbl">신규 주담대 규모</span><span class="sval" id="as-loan-lbl">5억</span></div><input type="range" id="as-newloan" min="10000" max="80000" step="5000" value="50000" oninput="calcAsset()"></div>
-      <div class="rbox"><div class="rrow"><span style="color:var(--text2)">월 상환 (30년·5%)</span><span id="as-monthly" class="cr">—</span></div><div class="rrow"><span style="color:var(--text2)">상환 후 저축 여력</span><span id="as-surplus">—</span></div></div>
-      <div class="budget3">
-        <div class="bslot" style="background:var(--surface2)"><div class="bslot-lbl cx" style="font-size:10px">2026년</div><div class="bslot-val cx" id="bg26">—</div></div>
-        <div class="bslot" style="background:var(--amber-dim);border:.5px solid rgba(245,179,64,.2)"><div class="bslot-lbl ca" style="font-size:10px">2027년 ★</div><div class="bslot-val ca" id="bg27">—</div></div>
-        <div class="bslot" style="background:var(--blue-dim);border:.5px solid rgba(74,159,224,.2)"><div class="bslot-lbl cb" style="font-size:10px">2028년</div><div class="bslot-val cb" id="bg28">—</div></div>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.6">취득세·이사비용 약 500~800만 별도 차감 필요</div>
-    </div></div>
-  </div>
-  <div id="panel-loan" style="display:none">
-    <div class="card"><div class="card-hd">조건 설정</div><div class="card-bd">
-      <div class="sblock"><div class="shead"><span class="slbl">집 매도가</span><span class="sval" id="o-sell">—</span></div><input type="range" min="35000" max="55000" step="500" value="45000" id="i-sell" oninput="calc()"></div>
-      <div class="sblock"><div class="shead"><span class="slbl">목표 매수가</span><span class="sval" id="o-buy">8억 2,000만</span></div><input type="range" min="50000" max="100000" step="1000" value="82000" id="i-buy" oninput="calc()"></div>
-      <div class="sblock"><div class="shead"><span class="slbl">대출 금리</span><span class="sval" id="o-rate">5.0%</span></div><input type="range" min="25" max="80" step="1" value="50" id="i-rate" oninput="calc()"></div>
-      <div class="sblock" style="margin-bottom:0"><div class="shead"><span class="slbl">대출 기간</span><span class="sval" id="o-term">30년</span></div><input type="range" min="10" max="40" step="5" value="30" id="i-term" oninput="calc()"></div>
-    </div></div>
-    <div class="card"><div class="card-hd">계산 결과</div><div class="card-bd"><div class="rbox" style="margin-top:0">
-      <div class="rrow"><span style="color:var(--text2)">매도 차액 (주담대 제외)</span><span id="r-net">—</span></div>
-      <div class="rrow"><span style="color:var(--text2)">현금 가용 자산</span><span id="r-cash">—</span></div>
-      <div class="rrow"><span style="color:var(--text2)">자기자금 합계</span><span id="r-eq">—</span></div>
-      <div class="divider" style="margin:8px 0"></div>
-      <div class="rrow"><span style="color:var(--text2)">필요 대출</span><span id="r-loan" class="ca">—</span></div>
-      <div class="rrow tot"><span>월 상환액</span><span id="r-pay" class="cr">—</span></div>
-      <div class="rrow tot"><span>30년 총이자</span><span id="r-int" class="cr">—</span></div>
-      <div class="divider" style="margin:8px 0"></div>
-      <div class="rrow"><span style="color:var(--text2)">상환 후 저축 여력</span><span id="r-left">—</span></div>
-    </div></div></div>
-  </div>
-</div>
-
-<!-- ④ 매물 검색 -->
-<div id="page-props" class="page">
-  <div class="page-title">매물 검색</div>
-  <div class="page-sub">아파트명으로 바로 조회</div>
-  <div class="alert alert-b">🔗 아파트명 입력 → 네이버 부동산·호갱노노 원터치 이동</div>
-  <div class="swrap"><input class="sinput" id="apt-input" type="text" placeholder="아파트명 입력" autocomplete="off" onkeydown="if(event.key==='Enter')doSearch()"><button class="sbtn" onclick="doSearch()">검색</button></div>
-  <div class="slbl2">후보 매물 빠른 선택</div>
-  <div class="chips" id="chips">
-    <div class="chip" onclick="quickSelect(this,'대성코오롱')">대성코오롱</div>
-    <div class="chip" onclick="quickSelect(this,'라온프라이빗리버포레')">라온프라이빗</div>
-    <div class="chip" onclick="quickSelect(this,'서희스타힐스')">서희스타힐스</div>
-    <div class="chip" onclick="quickSelect(this,'인창e편한세상2차')">인창e편한세상</div>
-    <div class="chip" onclick="quickSelect(this,'한일베라체')">한일베라체</div>
-    <div class="chip" onclick="quickSelect(this,'다산e편한세상자이')">다산e편한세상자이</div>
-    <div class="chip" onclick="quickSelect(this,'한강반도유보라')">한강반도유보라</div>
-    <div class="chip" onclick="quickSelect(this,'신장에코타운')">신장에코타운</div>
-    <div class="chip" onclick="quickSelect(this,'성남한신')">성남한신</div>
-  </div>
-  <div id="prop-results"></div>
-  <div id="default-trades">
-    <div class="slbl2">최근 실거래 현황</div>
-    <div class="card"><div class="card-bd">
-      <div class="trow"><div><div style="font-size:13px;font-weight:500">덕소강변 서희스타힐스</div><div style="font-size:11px;color:var(--text3)">74.51㎡·7층</div></div><div style="text-align:right"><div class="tamt">6.75억</div><div style="font-size:10px;color:var(--text3)">26.05.20</div></div></div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:500">덕소강변 서희스타힐스</div><div style="font-size:11px;color:var(--text3)">59.79㎡·18층</div></div><div style="text-align:right"><div class="tamt">6.44억</div><div style="font-size:10px;color:var(--text3)">26.04.12</div></div></div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:500">덕소강변 라온프라이빗</div><div style="font-size:11px;color:var(--text3)">59.92㎡·12층</div></div><div style="text-align:right"><div class="tamt">6.48억</div><div style="font-size:10px;color:var(--text3)">26.04.14</div></div></div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:500">덕소강변 라온프라이빗</div><div style="font-size:11px;color:var(--text3)">59.92㎡·6층</div></div><div style="text-align:right"><div class="tamt">6.00억</div><div style="font-size:10px;color:var(--text3)">26.01.29</div></div></div>
-      <div class="trow" style="border:none"><div><div style="font-size:13px;font-weight:500;color:var(--red)">강산마을 대성코오롱 ★</div><div style="font-size:11px;color:var(--text3)">59.94㎡·12층</div></div><div style="text-align:right"><div class="tamt" style="color:var(--red)">4.15억</div><div style="font-size:10px;color:var(--text3)">26.05.23</div></div></div>
-    </div></div>
-  </div>
-</div>
-
-<!-- ⑤ 타임라인 -->
-<div id="page-timeline" class="page">
-  <div class="page-title">전략 타임라인</div>
-  <div class="page-sub">2026 → 2029년 핵심 일정</div>
-  <div class="alert alert-r" id="tl-deadline">🏫 초등학교 입학 마감</div>
-  <div class="tlwrap">
-    <div class="tli"><div class="tll"><div class="tldot" style="background:var(--blue)"></div><div class="tlline"></div></div><div class="tlr"><div class="tlyear">2026 · 현재</div><div class="tltitle">자산 정비 · 매도 타이밍 탐색</div><div class="tldesc" id="tl-2026">코오롱 호가 4~4.5억. 라온 입주권 B-3 적극 검토.</div></div></div>
-    <div class="tli"><div class="tll"><div class="tldot" style="background:var(--amber)"></div><div class="tlline"></div></div><div class="tlr"><div class="tlyear">2027 · 핵심 매도 창</div><div class="tltitle">코오롱 전략적 매도 최적 시점</div><div class="tldesc">라온 999세대 입주(2028.03) 前 매도. GTX-B(2030) 기대감 고점. 이 시점 최대 차액 확보.</div></div></div>
-    <div class="tli"><div class="tll"><div class="tldot" style="background:var(--green)"></div><div class="tlline"></div></div><div class="tlr"><div class="tlyear">2028년 3월</div><div class="tltitle">덕소 라온프라이빗 입주</div><div class="tldesc">B-3 선택 시 이 시점 입주. 999세대 대규모 입주 → 인근 전세·매매가 단기 압박 예상. 입주 전 스타힐스 월세 (5천/180만).</div></div></div>
-    <div class="tli"><div class="tll"><div class="tldot" style="background:var(--red)"></div><div class="tlline"></div></div><div class="tlr"><div class="tlyear" id="tl-school-year">2029년 3월 · 마감</div><div class="tltitle" id="tl-school-title">초등학교 입학</div><div class="tldesc" id="tl-school-desc">전입신고 기준 최소 6개월~1년 전 확정 권장.</div></div></div>
-    <div class="tli"><div class="tll"><div class="tldot" style="background:var(--text3)"></div></div><div class="tlr"><div class="tlyear">2029년 3월 · 참고</div><div class="tltitle">덕소 3구역 자이푸르지오 입주</div><div class="tldesc">3,308세대 대규모 입주 → 덕소 구축 시세 압박 예상.</div></div></div>
-  </div>
-</div>
-
-</div><!-- /content -->
-
-<div class="tabbar">
-  <button class="tab-btn active" id="tab-summary" onclick="switchPage('summary')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>현황</span></button>
-  <button class="tab-btn" id="tab-scenario" onclick="switchPage('scenario')"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>시나리오</span></button>
-  <button class="tab-btn" id="tab-calc" onclick="switchPage('calc')"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="6" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="18" y2="10"/><line x1="6" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="18" y2="14"/><line x1="6" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="18" y2="18"/></svg><span>계산기</span></button>
-  <button class="tab-btn" id="tab-props" onclick="switchPage('props')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>매물검색</span></button>
-  <button class="tab-btn" id="tab-timeline" onclick="switchPage('timeline')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>타임라인</span></button>
-</div>
+<nav class="tabs"><div class="wrap">
+  <button data-go="p-home" class="on"><span>🏠</span>홈</button>
+  <button data-go="p-sell"><span>📉</span>매도신호</button>
+  <button data-go="p-gap"><span>📏</span>갭추적</button>
+  <button data-go="p-money"><span>💰</span>자금</button>
+  <button data-go="p-plan"><span>🗂️</span>플랜·세금</button>
+</div></nav>
+<div id="toast"></div>
 
 <script>
-// ─── 유틸
-function fmt(n){n=Math.round(n);if(n>=10000){const ok=Math.floor(n/10000),man=n%10000;return man>0?ok+'억 '+man.toLocaleString()+'만':ok+'억';}return n.toLocaleString()+'만';}
-function g(id){return document.getElementById(id);}
-function val(id){return parseFloat(g(id).value)||0;}
-function txt(id,v){const el=g(id);if(el)el.textContent=v;}
-function mPay(p,r,y){if(p<=0)return 0;const m=r/100/12,n=y*12;return p*10000*m*Math.pow(1+m,n)/(Math.pow(1+m,n)-1);}
-
-// ─── 데이터
-function getData(){
-  return{
-    sellprice:val('e-sellprice'),buyprice:val('e-buyprice'),interior:val('e-interior'),acqtax:val('e-acqtax'),
-    debt:val('e-debt'),rate:val('e-rate'),monthint:val('e-monthint'),monthprin:val('e-monthprin'),
-    minus:val('e-minus'),invest:val('e-invest'),sub:val('e-sub'),infinite:val('e-infinite'),
-    pension:val('e-pension'),retire:val('e-retire'),income:val('e-income'),save:val('e-save'),spend:val('e-spend'),
-    child:g('e-child').value,birthyear:val('e-birthyear'),
-  };
+const DATA = {"asof_trades":"2026-11-09","months":["2015-01","2015-02","2015-03","2015-04","2015-05","2015-06","2015-07","2015-08","2015-09","2015-10","2015-11","2015-12","2016-01","2016-02","2016-03","2016-04","2016-05","2016-06","2016-07","2016-08","2016-09","2016-10","2016-11","2016-12","2017-01","2017-02","2017-03","2017-04","2017-05","2017-06","2017-07","2017-08","2017-09","2017-10","2017-11","2017-12","2018-01","2018-02","2018-03","2018-04","2018-05","2018-06","2018-07","2018-08","2018-09","2018-10","2018-11","2018-12","2019-01","2019-02","2019-03","2019-04","2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-11","2019-12","2020-01","2020-02","2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08","2026-09","2026-10","2026-11"],"complexes":{"강일리버파크7단지|59":{"name":"강일리버파크7단지","region":"강동(강일)","pt":"59","m":[null,null,37500,38000,38000,39000,38750,39500,39700,39500,39700,39500,39900,39900,39950,41250,41500,41600,41600,41500,41250,41250,41500,41500,41500,41600,41600,42100,43800,44000,44000,44500,45000,45000,47000,44000,45000,52000,52800,52800,52800,53400,55250,57100,54000,54000,54000,54000,56500,57100,null,null,null,56500,56500,56500,56500,57500,58800,60000,60000,60000,60000,61650,59400,60000,60000,63300,63300,76000,77850,81350,83000,85500,85500,88000,88150,81350,83000,88000,88000,88150,88300,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,80700,80850,80850,81000,81000,80850,81000,81000,81000,82500,82500,86700,86400,86400,88800,89400,90000,93000,93000,93000,90000,101300,92500,100000,100000,100000,100000,100650,100000],"n":64,"recent":[100000,1],"r3":[100000,1],"peak21":104000,"med21":104000,"last":[["2025-10-14",92500,4],["2025-11-15",101300,5],["2026-04-11",100000,11],["2026-04-13",108000,2],["2026-09-07",100000,8]],"est":101700,"estSrc":"idx"},"강일리버파크7단지|84":{"name":"강일리버파크7단지","region":"강동(강일)","pt":"84","m":[42700,43000,43000,43500,43500,43800,44900,45500,45500,46000,46200,46200,46800,46100,46500,46350,46500,46250,46500,46600,46600,47000,47800,48000,48000,48000,48750,48400,49600,49900,50000,50000,50850,51400,55130,56400,57500,58750,59000,59000,59900,65000,65250,67000,67350,67350,67000,67500,67500,67000,67000,61800,61800,61800,63000,64500,65000,67500,67750,68000,68000,71500,71500,68000,68000,68000,86800,86800,88000,88000,89000,94900,95000,95000,97000,97000,101000,94950,95000,95000,97000,97000,101000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,83700,85000,85000,85000,85000,85250,86500,87750,88500,89250,89500,91000,86500,90000,90000,90000,90000,90000,90000,89950,90000,90000,90000,100250,100500,101000,100500,101500,102000,104500,104750,107350,109700,111180,112350,119250,125500,129500,130650,131800,131800,132000,131900,131800],"n":175,"recent":[131900,4],"r3":[null,0],"peak21":107500,"med21":107500,"last":[["2026-04-25",133000,8],["2026-05-13",132000,13],["2026-06-17",136000,14],["2026-06-18",126500,7],["2026-06-29",131800,8]],"est":134200,"estSrc":"idx"},"구리인창e편한세상|59":{"name":"구리인창e편한세상","region":"구리","pt":"59","m":[29250,30500,30580,30650,30730,30650,30800,30400,30650,30650,30000,30950,31900,31900,31850,32700,30000,30000,31000,34000,34000,35300,35950,35800,35900,35900,33050,36100,36100,36200,36200,36200,36350,37500,37750,37800,38080,38400,38400,38600,39250,40300,40900,40800,40750,40800,41250,44000,44730,44750,45380,46000,44350,39750,44350,34800,35400,35500,42750,49700,49500,49900,49900,51300,50600,51650,55500,59900,60000,60000,62400,64030,64030,64700,64700,64750,64500,64900,65200,61000,61000,61000,62500,62500,62500,62500,62500,62500,67000,67000,67000,null,null,null,null,null,null,null,null,null,null,null,65000,58400,51800,63500,64250,64250,62750,63130,62380,61200,61200,61200,60600,61200,65000,65000,65000,65000,65500,64650,59330,65000,64400,64400,64400,66200,67000,67000,67000,67000,67000,69950,72000,74000,74350,74850,75900,78500,80000,81500,83750],"n":208,"recent":[82250,6],"r3":[84000,2],"peak21":72000,"med21":64800,"last":[["2026-05-16",78500,14],["2026-06-08",81500,7],["2026-06-30",84500,20],["2026-08-31",85000,10],["2026-09-12",83000,17]],"est":85200,"estSrc":"idx"},"구리인창e편한세상|84":{"name":"구리인창e편한세상","region":"구리","pt":"84","m":[34000,37900,37950,37900,38000,38800,39200,39250,39230,39400,39400,39500,39500,38530,39280,35750,38250,38600,39850,40000,40500,40950,41500,41000,42000,42750,42380,43500,43250,43500,43000,43000,43000,43550,44850,44800,45600,46000,47150,46850,46700,46750,50000,50000,50800,52200,52200,53700,54900,54900,59000,53700,53700,53700,54900,54900,57000,57750,59000,60000,60000,60000,60000,60000,60850,63000,66750,75800,75900,76000,77250,79000,80500,80500,80500,81000,81000,81000,83800,85000,84650,84650,83800,84650,85000,85250,85500,85500,83800,84650,89500,null,null,null,null,null,null,null,null,null,72000,72000,72000,66000,66000,70000,70000,70000,70000,71400,70700,71400,74000,74000,74000,74000,74000,68900,63800,69900,69900,63800,76000,75000,78000,78500,78500,78500,78750,78750,78500,78500,80000,80000,80650,81500,81500,82750,85500,85250,85250,84000,95500],"n":257,"recent":[77000,8],"r3":[95500,3],"peak21":92000,"med21":83000,"last":[["2026-05-29",70000,12],["2026-05-30",84000,2],["2026-09-02",95500,5],["2026-10-13",99000,5],["2026-10-28",70000,1]],"est":79800,"estSrc":"idx"},"구리인창주공1|59":{"name":"구리인창주공1","region":"구리","pt":"59","m":[23200,23400,23500,23500,23850,23900,24500,24950,25480,25600,25750,25900,25850,26000,26200,26200,26200,26400,26500,26750,27000,27300,27700,28500,28800,28900,28850,28500,28600,29000,29500,30100,30500,30600,31000,31000,31000,31000,31400,31100,31000,31100,31100,31500,31650,32000,32000,32000,32000,37000,37000,36750,36450,36500,36450,36350,36250,36000,36000,36000,37000,37050,38000,39400,41500,45000,47000,48150,48500,49000,50000,50900,52800,53850,54300,56000,57700,59500,59800,60000,60000,61000,61250,63500,64500,67000,66000,65000,60750,60000,60000,60000,60000,60000,59000,54000,59000,49800,49900,48000,48000,48900,48500,48250,48250,49490,50000,49990,53250,53750,51800,53500,53750,53500,53500,53800,54150,54500,54150,54500,53200,52500,52550,52600,53000,53500,53500,53500,53500,54500,55000,55000,55800,57000,58000,58780,60000,63000,64500,65000,68000,70000,71500],"n":784,"recent":[70000,22],"r3":[74750,6],"peak21":69500,"med21":59900,"last":[["2026-09-05",74500,11],["2026-09-11",62000,1],["2026-09-18",76000,8],["2026-09-21",75000,17],["2026-10-18",68000,1]],"est":74750,"estSrc":"3m"},"구리인창주공6|59":{"name":"구리인창주공6","region":"구리","pt":"59","m":[25300,25500,25400,25500,25400,25500,25600,25750,26000,26950,27930,28000,28350,28100,28230,29200,29200,29200,29200,29300,29400,29500,30000,30300,30750,31000,31000,31000,31000,31100,31350,31500,31600,31680,32000,32600,33000,33700,33750,33700,33700,34250,33850,34000,34500,34500,34950,35000,36000,37950,39000,38000,39000,40000,39500,40000,40000,40000,39700,39900,40000,40500,40550,40900,41400,45250,47500,49630,49850,50000,50300,53500,53800,53900,54000,55000,57350,59000,61000,62800,63000,63550,65000,67000,69800,62800,63200,63950,64000,64000,64000,64000,64000,63500,63500,64000,64000,64000,63000,53000,52250,53000,53000,53000,53500,54250,54750,54250,54000,54000,54000,54000,54000,47650,55250,55300,57500,56400,55300,56250,56500,58000,55000,55500,56900,57000,56800,56800,57000,57500,58250,58500,58900,59200,59950,60800,61800,64000,64650,64800,69250,74000,75250],"n":607,"recent":[75000,16],"r3":[76500,6],"peak21":70500,"med21":60000,"last":[["2026-09-04",78500,8],["2026-09-29",77000,12],["2026-10-16",75000,15],["2026-10-23",80000,3],["2026-10-24",76000,12]],"est":76500,"estSrc":"3m"},"다산e편한세상자이|59":{"name":"다산e편한세상자이","region":"다산","pt":"59","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,31400,31550,31500,31450,31450,31500,31600,31550,31700,31550,42000,41000,42250,44000,44750,45500,53000,58000,58500,59250,59950,60750,62000,65000,65800,65900,66500,67000,67500,68000,70000,72000,74500,77700,77850,78000,78500,78750,79000,79250,81000,85250,85500,79200,80000,80000,80000,80000,85000,80150,80000,80000,80000,55800,57700,57700,60000,60000,62000,67500,68750,68750,69000,70000,70000,70000,69000,69000,68250,68250,69000,71000,72300,72650,72650,73000,74000,75000,75000,75400,75800,75900,76500,76500,76300,77000,77000,77600,78500,80000,80000,80500,80900,82900,85500,87000,88250,89000,89600,89800],"n":276,"recent":[89500,25],"r3":[98000,7],"peak21":89000,"med21":78500,"last":[["2026-08-25",85000,2],["2026-09-03",98000,22],["2026-09-14",101500,29],["2026-10-03",85000,1],["2026-10-25",95000,16]],"est":98000,"estSrc":"3m"},"다산e편한세상자이|84":{"name":"다산e편한세상자이","region":"다산","pt":"84","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,41600,41650,42000,42000,42000,42800,42800,46000,42800,42800,42800,42800,42800,63000,63000,64000,65000,69500,71500,75000,75000,75000,77380,79850,80000,82000,83000,83000,83750,84400,84950,89000,91000,93000,93800,94500,95000,96000,96000,96600,100000,100000,96250,95000,96500,96500,95000,93250,91500,91500,91000,91000,73000,72000,72000,73000,73000,74000,77150,79000,82000,83000,83000,83000,84650,83000,81250,82000,81250,81500,83650,84650,86000,86000,86000,87000,87800,87400,87000,87400,87000,88000,88500,88500,88700,88600,90700,91250,91250,92500,92500,94500,95000,96900,97650,100000,101000,103500,104800,109000],"n":349,"recent":[104900,36],"r3":[115000,5],"peak21":104000,"med21":94600,"last":[["2026-08-14",109000,19],["2026-08-18",122000,16],["2026-08-24",116000,17],["2026-09-19",115000,18],["2026-10-19",115000,21]],"est":115000,"estSrc":"3m"},"다산롯데캐슬|84":{"name":"다산롯데캐슬","region":"다산","pt":"84","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,36480,38700,39500,40000,40000,40000,40000,40000,40200,38600,40000,41000,40000,40000,42000,56000,54000,55000,56000,59250,62000,65000,68000,69000,69400,70000,71000,72000,72250,74300,74400,74000,78000,81750,83000,84130,85300,86150,88000,89700,92000,93000,93500,94000,94500,94500,96750,97250,97500,99000,97500,92250,91000,91000,89500,88750,80000,77000,72500,69750,69500,72500,76000,77000,77000,79600,79700,80000,80000,82500,82250,83000,83500,82000,81900,81850,82000,82750,84500,84800,85750,86500,86850,87000,91300,89500,89500,89750,89500,89500,89500,89400,89900,90000,90900,91000,91950,92900,93600,95000,97000,98500,99000,100850,102750,104800],"n":423,"recent":[103900,39],"r3":[119500,2],"peak21":103000,"med21":94000,"last":[["2026-08-01",115000,10],["2026-08-08",114000,7],["2026-08-09",119500,23],["2026-08-21",124500,18],["2026-09-15",114500,24]],"est":106400,"estSrc":"idx"},"다산펜테리움|84":{"name":"다산펜테리움","region":"다산","pt":"84","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,48550,48550,48550,57130,57270,57320,59000,59000,59000,62000,65500,71500,75500,75000,76000,76000,84000,85000,86500,87250,88500,90300,93500,90300,90900,90900,91750,92000,94000,94750,97350,99000,99000,98500,99000,95000,91500,89500,89500,84000,78500,77000,73000,73000,72000,72000,72000,74000,74500,75000,77000,78350,79500,80000,79500,78900,78800,77150,77000,78000,78500,81000,82000,82500,82500,82000,82500,82750,82750,83000,83000,83900,84000,84200,85000,85800,86000,87000,89000,90000,90000,91000,93250,94000,95250,97000,97500,99000,103000,106000],"n":533,"recent":[104700,45],"r3":[112500,11],"peak21":111000,"med21":94500,"last":[["2026-09-24",105000,2],["2026-10-16",112500,28],["2026-10-21",107400,7],["2026-10-23",107000,1],["2026-10-30",113500,21]],"est":112500,"estSrc":"3m"},"덕소대성코오롱(현재집)|59":{"name":"덕소대성코오롱","region":"덕소(현재집)","pt":"59","m":[null,21400,22150,23000,23000,23000,23880,24150,24100,24430,24450,24450,24650,24800,24900,24800,24750,24650,24750,25000,25000,25000,25000,25000,25000,25000,24650,24630,24900,24930,25050,25100,25500,25500,25650,25900,25950,25500,25700,25400,25550,25550,25550,25700,25450,25800,25450,25450,25450,25450,25450,23800,23650,23900,23900,24000,24000,24000,23700,23900,23950,24630,24930,25880,26000,26500,26800,27000,30700,35150,36750,37650,38000,40000,40000,40500,41500,42700,44750,45800,45850,46250,46700,47650,48900,48650,50400,49100,49900,49900,49800,49800,48200,49000,49800,49800,33000,34100,34000,34000,34800,34800,34800,33700,33700,33700,33250,33250,36900,37400,37750,37500,37500,37400,37000,36250,36000,36500,36500,36900,36950,37000,37000,36600,37500,37200,37200,37200,37600,37600,37200,36700,37100,38600,38700,38500,38700,38800,38900,39700,39700,40600,41000],"n":313,"recent":[40600,12],"r3":[42400,4],"peak21":52500,"med21":44675,"last":[["2026-06-27",40200,9],["2026-08-14",39400,1],["2026-08-20",42800,8],["2026-08-24",42000,18],["2026-10-13",49500,12]],"est":41600,"estSrc":"idx"},"덕소대성코오롱(현재집)|84":{"name":"덕소대성코오롱","region":"덕소(현재집)","pt":"84","m":[27930,28080,28300,28400,28250,28400,29000,29000,29450,29850,29900,29950,30000,30180,30500,30000,29950,29800,29680,29900,29800,29950,30200,30450,30450,30000,30000,29750,29880,30000,30000,30000,30300,30700,31000,30700,31200,30950,30900,31000,30900,30900,30650,30700,30450,30300,30210,30260,30400,30120,30150,30300,30000,30000,30000,29500,29650,29800,29800,29930,30000,30300,30400,30550,31250,31850,32000,35000,37000,37000,43000,49000,49600,49700,49900,49900,49900,52500,53880,54750,55250,55650,59900,61350,61350,61000,55500,57400,60000,60000,60850,60700,60000,60000,59850,44000,44000,45000,44500,44000,43600,43600,44250,43200,41200,43850,43000,43000,43000,45000,45000,44850,45000,45000,44900,44800,44900,45000,45000,45450,46400,46000,46200,46500,48000,48000,47750,48000,48000,48000,47500,46300,46000,46750,46000,47000,47400,47400,47800,47800,48000,49800,49900],"n":320,"recent":[49900,12],"r3":[52750,6],"peak21":63000,"med21":54750,"last":[["2026-09-01",52500,17],["2026-09-17",50000,10],["2026-09-22",54000,17],["2026-09-29",53000,1],["2026-10-30",57500,5]],"est":52750,"estSrc":"3m"},"덕소아이파크|84":{"name":"덕소아이파크","region":"덕소","pt":"84","m":[38250,38400,38450,38500,38500,38500,38500,38750,38850,39100,39080,39000,38980,39100,39100,39250,39230,39300,39250,39300,39500,39700,39800,39830,40000,40200,40400,40200,40500,40500,40750,41000,41000,41000,41250,41600,41600,41700,41000,40500,40250,40000,40000,40500,40800,40900,41850,41900,41950,41850,41850,41250,40300,40500,40300,40500,41000,41500,42000,42400,42400,42500,43000,43500,45000,47500,50700,51900,52450,55000,60100,63150,64000,64200,64500,64600,64900,67250,69000,74900,75500,76000,77000,77000,77000,79250,75500,75000,77650,77000,77000,78650,76000,76000,75500,74250,74250,65500,60250,60000,59850,60000,60000,60000,60000,60850,61000,62000,62900,62900,61000,60250,59900,60000,60000,60250,60500,60750,60750,61000,60100,60100,60000,60200,62800,62400,63300,63500,63500,63500,64000,63500,63500,63000,63000,63000,63000,64300,64400,64500,64900,64950,67000],"n":500,"recent":[65000,19],"r3":[69500,6],"peak21":82900,"med21":70000,"last":[["2026-08-11",69000,12],["2026-08-15",63000,2],["2026-08-17",69000,13],["2026-08-21",70000,18],["2026-10-13",85000,16]],"est":69500,"estSrc":"3m"},"미사강변골든센트로|59":{"name":"미사강변골든센트로","region":"하남(미사)","pt":"59","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,41500,41800,41900,44750,45000,45000,45100,45200,46000,47000,47000,47800,48000,48800,49000,50000,50980,53000,53850,54000,54200,54400,54800,55900,59250,61000,62000,62000,62000,62800,62800,64000,62750,58650,58150,58700,58700,58850,59000,60000,61900,65250,67800,70000,72000,73000,73000,74900,75000,76000,76500,78000,80000,82000,84500,84900,85500,85800,86600,89500,90000,91000,92500,93000,93000,93000,93000,91800,91400,88700,88700,87500,86500,88000,83000,80000,75600,71350,70800,71000,72250,73000,73500,74000,75400,75700,76500,77850,78750,79000,78500,78400,78500,78400,78400,79500,80000,80500,81500,82000,82250,86500,87000,87000,88000,88600,88700,89000,89000,89000,89500,90250,91500,94500,95000,95750,97000,110000,110500,111000,116000,117000,118000,118000,119000],"n":532,"recent":[118000,17],"r3":[123000,4],"peak21":97500,"med21":90000,"last":[["2026-08-04",118000,4],["2026-08-19",123000,6],["2026-09-29",123000,25],["2026-10-17",117000,16],["2026-11-05",127700,17]],"est":123000,"estSrc":"idx"},"미사강변골든센트로|84":{"name":"미사강변골든센트로","region":"하남(미사)","pt":"84","m":[null,38400,38000,38000,38000,38000,38000,38000,38000,38000,38000,38200,38400,39000,44700,44700,44700,45200,49950,49250,49500,52250,53000,55950,55000,55000,55000,54800,55500,55500,56000,56600,57350,57850,59500,61000,62650,64000,64250,64750,65000,65800,67000,72000,72500,72750,72800,73400,74000,77250,67000,67000,67000,67000,69000,69300,70000,76000,77000,78000,79000,79350,80000,82000,86500,89200,91750,92000,92250,92650,94000,95900,100000,100000,100500,104650,107500,108000,108000,110250,110500,110750,112400,113800,113800,115000,115000,110000,110000,109250,108500,108500,108500,109250,109250,108500,108500,108500,107250,87250,89750,90000,90400,92000,92500,93000,94000,95000,94000,93150,92300,92300,92650,93700,96300,97000,97250,98750,100000,102750,103800,103900,103000,103000,103750,104250,104500,104500,106000,107200,108000,109750,110000,110000,113500,124500,124750,130000,132500,132500,132750,134000,133000],"n":416,"recent":[134000,12],"r3":[142000,1],"peak21":123000,"med21":109600,"last":[["2026-07-11",136000,9],["2026-07-14",133000,9],["2026-07-25",131000,11],["2026-08-08",140000,18],["2026-10-16",142000,13]],"est":139600,"estSrc":"idx"},"미사강변센트리버|59":{"name":"미사강변센트리버","region":"하남(미사)","pt":"59","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,52800,53500,54200,54200,54200,54600,57850,59000,59000,59000,59000,59000,59500,58000,57500,54000,52000,52900,54350,54700,57300,57500,58000,58000,58500,58750,60000,68000,69300,70500,71250,71750,74500,76500,80000,81700,82400,83000,83000,85000,89750,90000,90500,91000,91000,92500,92500,93900,91000,91750,91750,92500,92500,93900,null,null,null,null,null,null,null,69500,70000,70000,73500,73500,73500,74750,75000,75000,75650,74000,74000,74500,74500,75000,76250,78000,79000,83000,83000,84000,85250,86000,86000,86500,86500,87500,87500,87500,88400,90000,93000,94000,97500,97500,98300,105350,111500,111500,112000,112950,112950,113900,113900,115350],"n":178,"recent":[115350,6],"r3":[116800,3],"peak21":94700,"med21":90000,"last":[["2026-07-07",80000,9],["2026-07-27",118800,19],["2026-09-10",112000,2],["2026-10-24",123000,9],["2026-11-04",116800,3]],"est":120200,"estSrc":"idx"},"미사강변센트리버|84":{"name":"미사강변센트리버","region":"하남(미사)","pt":"84","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,63000,63000,63000,63500,64000,64500,68000,68000,68000,68000,68450,69000,68000,62300,60500,60000,60250,63000,63400,64850,68500,69500,69750,70000,70000,76200,77900,81000,82500,83250,85000,85000,87000,90000,93750,94500,96150,97300,100500,100500,105500,105500,97650,106000,108400,107000,106000,106000,107000,109800,106000,106000,105000,105000,106000,105000,102500,null,null,82500,83000,83000,83250,84000,84000,85500,86250,87250,88500,88000,88250,87750,87500,87500,89500,90000,93500,94250,94250,94500,95000,98000,100500,94500,98500,100000,100000,103000,103000,104000,105500,107800,108000,109000,109600,110500,115000,124250,124250,125000,125250,126000,126000,130500,133000],"n":212,"recent":[132500,6],"r3":[137800,2],"peak21":115000,"med21":105000,"last":[["2026-06-03",129000,17],["2026-06-04",132000,9],["2026-06-27",133000,16],["2026-10-03",138600,21],["2026-10-29",137000,5]],"est":138100,"estSrc":"idx"},"산성역포레스티아|59":{"name":"산성역포레스티아","region":"성남(수정)","pt":"59","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,105000,105000,105000,105000,105000,105000,105000,107250,107250,108750,109000,110130,110130,111500,108750,108750,109000,110130,110130,111250,100380,null,null,null,75000,75000,75500,75500,79700,80500,82150,83700,85000,85250,88000,88700,89000,90000,90000,89500,90000,90000,90800,91800,92750,93200,94900,97700,101500,103750,103000,103000,103000,102750,104500,105000,105000,111300,113000,113000,115000,115000,115250,125000,126500,132000,134000,135250,136500,140500,142500,144750],"n":208,"recent":[143000,26],"r3":[148050,10],"peak21":114500,"med21":108500,"last":[["2026-09-14",142500,5],["2026-09-14",150000,13],["2026-10-09",149500,11],["2026-10-12",146600,9],["2026-10-31",141700,3]],"est":148050,"estSrc":"3m"},"산성역포레스티아|84":{"name":"산성역포레스티아","region":"성남(수정)","pt":"84","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,127000,127000,127000,127500,130250,133000,133500,133750,134500,134500,135000,135000,135000,138150,144500,135000,135000,135000,125000,122500,120000,106750,106750,103500,103500,97500,99500,97500,99500,100000,103000,104600,107000,108000,109800,113500,115000,114750,113750,113000,113900,114250,114650,115000,115000,115000,115750,117000,121000,124000,123000,123500,124000,124250,125000,126500,127750,131200,134700,135000,138000,139700,140000,145000,150000,151500,152250,154000,155000,155000,156000,159000],"n":232,"recent":[157500,17],"r3":[172000,2],"peak21":170000,"med21":134500,"last":[["2026-07-11",157500,12],["2026-07-18",157000,2],["2026-07-20",158000,2],["2026-08-22",168000,12],["2026-10-17",176000,2]],"est":162000,"estSrc":"idx"},"성복아이파크|84":{"name":"성복아이파크","region":"용인(수지)","pt":"84","m":[null,null,43500,45900,45900,45900,46000,46000,45400,44950,45000,45000,45000,45000,45000,47000,47000,45000,45000,45000,45000,45000,45500,45500,45500,45500,45500,45500,45500,45500,45450,44000,44000,44000,44000,44000,43750,42500,42900,45000,45000,45000,45000,45250,46500,46500,46650,46800,47000,47900,47900,47900,46900,46900,47000,47900,48000,48000,47000,47000,47250,47650,47500,47500,47900,49600,58450,59000,59000,59500,61650,65750,73000,73000,73000,73000,73000,70250,74500,74500,76000,76000,76000,76000,76000,76000,76000,76000,76000,76000,76000,76000,null,null,null,null,null,null,null,null,null,null,null,64700,64700,66850,66850,69000,69000,67700,67700,67700,67700,68350,68350,67800,67700,67700,67700,67800,67800,67700,67500,68000,68250,69500,69000,70000,71500,72000,69850,70350,70500,73000,74500,76500,77000,77000,77000,77500,77000,77500,77000],"n":127,"recent":[77000,3],"r3":[83000,1],"peak21":85000,"med21":76000,"last":[["2026-04-22",77000,13],["2026-05-05",78000,10],["2026-05-21",77000,5],["2026-06-20",77000,4],["2026-09-11",83000,7]],"est":80100,"estSrc":"idx"},"성복역아이파크|59":{"name":"성복역아이파크","region":"용인(수지)","pt":"59","m":[null,null,31000,31000,31000,31000,31000,31000,31000,31900,31000,35800,35800,35800,31000,31900,32500,33500,33500,33500,33600,33600,33700,33700,33800,33850,33300,33700,33600,33180,33650,33650,33650,33650,34150,34650,34500,34800,34750,35000,35400,36500,38500,40100,40200,41500,35950,36750,45700,45700,45700,43600,45200,45200,45200,45200,44000,44000,44000,44000,44450,44900,45000,45000,46850,48700,55400,58000,58000,58250,59480,59950,60950,61500,61500,61750,68000,70000,70000,74850,75700,75700,75850,75700,74600,73000,72000,72000,72500,72000,71500,71500,72000,72000,72500,72000,71500,70000,67500,null,61000,61000,62000,64500,62000,62000,64500,64500,62000,64000,64000,61500,61000,61000,61000,62400,63000,64500,65000,64000,64000,64000,67000,67000,68500,70400,70400,73300,73500,73500,74000,77000,77000,81000,74000,90650,99800,100000,99800,99800,99800,99500,99500],"n":135,"recent":[99500,3],"r3":[null,0],"peak21":77500,"med21":73500,"last":[["2026-04-16",99800,13],["2026-04-28",100500,13],["2026-06-27",100000,10],["2026-07-03",99500,4],["2026-07-07",98500,15]],"est":103600,"estSrc":"idx"},"성복역아이파크|84":{"name":"성복역아이파크","region":"용인(수지)","pt":"84","m":[null,36900,36800,36800,36900,37500,37500,37700,38000,38400,38750,39400,39900,39900,40350,40000,39400,40250,40150,39800,40500,40500,40500,40150,40800,40800,39300,39150,38500,38500,38500,38500,38250,38500,38500,39000,38450,39800,39800,39950,40650,41000,42850,45500,47500,49500,51000,51000,51000,52050,49500,49250,50000,48500,48000,48000,47500,47500,49350,52750,52800,54000,54100,54500,55000,61000,63000,63000,63000,63000,63500,65000,73800,75250,75500,76250,78000,79500,80000,80000,81000,81500,82750,84000,84500,85000,81000,81500,81000,81000,81000,81000,82000,82000,81000,81000,81000,73500,73750,67000,68350,68700,68700,68700,68700,69950,68200,66750,69000,71500,72000,72000,71500,72000,72400,72500,72900,72900,73500,77000,77900,78250,78800,78900,78900,79000,80000,82950,83700,84000,84500,85500,86500,87000,87000,91000,93250,94350,94350,107000,109000,109000,111000],"n":253,"recent":[109000,6],"r3":[109500,2],"peak21":87000,"med21":81000,"last":[["2026-05-22",95000,12],["2026-07-10",109000,7],["2026-08-06",113000,17],["2026-08-24",105000,15],["2026-09-03",114000,14]],"est":113400,"estSrc":"idx"},"신정마을주공1|59":{"name":"신정마을주공1","region":"용인(수지)","pt":"59","m":[34500,34600,34900,35000,35550,35450,36000,36780,37300,37400,37300,37850,37600,37450,37100,37100,37000,36400,36000,36400,36500,36700,36800,36800,36950,36800,36800,36650,36700,36800,36880,37000,37300,37380,37500,37900,38000,38400,38500,38850,39500,41000,44400,47680,48000,48300,48500,48500,48500,50350,50650,50000,48450,47000,47650,48500,48700,49500,49500,50280,50700,51550,52250,54400,55000,61350,64800,65000,65500,65800,66250,67500,68000,68300,68750,70000,74500,80000,82800,83000,83500,84000,83750,84000,85350,84750,83000,82800,82650,82500,82500,82250,73000,71000,70900,69650,64000,64250,63500,64000,64250,64500,65800,69150,71000,71500,71600,72250,71500,71500,71000,71500,71500,72450,73000,74000,74150,74950,75600,76050,77750,78500,78500,79080,80900,82500,82700,83650,85000,86050,88900,90900,94500,100600,106500,109500,111250,114000,118000,118800,120000,122750,125500],"n":992,"recent":[122900,28],"r3":[127500,11],"peak21":89500,"med21":82800,"last":[["2026-10-20",131000,13],["2026-11-01",127500,20],["2026-11-04",121800,2],["2026-11-04",134000,16],["2026-11-07",125500,4]],"est":127500,"estSrc":"3m"},"신흥역하늘채랜더스원|59":{"name":"신흥역하늘채랜더스원","region":"성남(중원)","pt":"59","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,80000,82400,82400,83700,84000,83200,83200,84000,86000,86000,86500,87000,87500,87500,88250,89500,90000,90000,90500,90000,90000,90500,92750,93500,94500,97000,98750,100000,105000,105000,107000,110000,116000,119900,122500,125000,126250,127000,129500,131300],"n":185,"recent":[130500,24],"r3":[132650,10],"peak21":null,"med21":null,"last":[["2026-09-05",133000,4],["2026-09-07",133200,5],["2026-09-15",140000,21],["2026-09-17",131000,4],["2026-10-18",139400,12]],"est":132650,"estSrc":"3m"},"신흥역하늘채랜더스원|84":{"name":"신흥역하늘채랜더스원","region":"성남(중원)","pt":"84","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,102500,102500,111250,112500,114750,114750,117000,117000,107500,107500,107500,108750,107500,108500,112000,112500,115000,116500,119000,119500,124000,127000,129850,140000,137500,140950,144000,144800,146750,146750,148250],"n":58,"recent":[147500,11],"r3":[151000,4],"peak21":null,"med21":null,"last":[["2026-07-31",146000,6],["2026-09-02",149000,14],["2026-09-16",150000,16],["2026-09-23",152000,14],["2026-11-03",156000,9]],"est":154700,"estSrc":"idx"},"중앙동힐스테이트2차|59":{"name":"중앙동힐스테이트2차","region":"성남(중원)","pt":"59","m":[null,34450,34200,34100,34000,34000,33980,33980,34230,34500,34700,34700,34850,36000,36000,36000,36000,36000,36000,36450,36500,36900,37200,37500,37600,37850,37850,38000,38000,37900,37900,37900,37900,37950,38000,39000,39650,39650,39800,40000,40200,41000,42750,43750,44250,48000,48000,48000,43750,48000,49000,50000,49000,48800,48800,48950,48900,49000,49350,51500,52750,55400,57500,60500,62000,66900,67900,68900,70450,72200,72500,73000,74500,78000,80650,81800,82150,83000,83750,84000,85500,85700,85700,86000,84000,84500,85600,85700,85700,86000,null,null,null,null,null,null,null,null,null,63000,64000,64000,65000,65500,66000,69800,71000,71000,65500,65500,68000,69750,70000,71000,71000,71000,71500,71000,72500,76300,76500,76500,76700,76850,79500,79500,78500,78750,78950,78900,78900,78900,79500,80000,94500,94500,95000,95000,101250,101500,105000,105500,106000],"n":182,"recent":[105500,6],"r3":[108350,2],"peak21":88000,"med21":83750,"last":[["2026-07-04",101500,4],["2026-07-23",105000,11],["2026-07-31",106000,9],["2026-09-28",107000,11],["2026-10-09",109700,13]],"est":110600,"estSrc":"idx"},"중앙동힐스테이트2차|84":{"name":"중앙동힐스테이트2차","region":"성남(중원)","pt":"84","m":[41750,41700,41950,41950,41950,42000,42000,42000,42000,42300,42750,43850,43950,43950,43700,43600,43500,43200,43500,43500,43500,43250,43500,43500,43500,43500,43500,44000,43900,44150,43500,44000,44250,44500,44750,44800,46000,46500,47000,47600,47700,48000,52000,54600,55750,57000,57000,57400,57800,58000,55000,56500,56750,55000,58100,58750,59000,59000,59600,60000,61000,64500,65000,65000,72000,78000,78000,79700,79850,80000,80000,83150,85500,89900,89900,89900,89900,99000,101800,101800,101800,104000,104000,101800,103800,104000,104000,102900,102000,98000,98000,100000,100000,98000,98000,98000,98000,null,null,98000,78700,null,78700,78850,79150,79300,80650,80650,82000,82000,80800,80650,80800,80800,82000,82250,82500,82900,83450,83950,86750,86000,86300,86300,86300,86300,88000,88250,89000,89000,89000,89500,89250,91000,93750,96400,97000,102000,109750,112000,112500,113000,114000],"n":297,"recent":[114000,9],"r3":[119000,1],"peak21":107000,"med21":101800,"last":[["2026-07-17",109000,8],["2026-07-17",114000,3],["2026-07-27",115000,2],["2026-07-28",115000,15],["2026-11-06",119000,15]],"est":119500,"estSrc":"idx"},"하남신장에코타운1단지|59":{"name":"하남신장에코타운1단지","region":"하남(신장)","pt":"59","m":[28930,29000,29000,29000,29100,29780,30450,31000,31650,31630,31750,31800,31950,32100,32100,32900,33000,33000,33000,33000,33000,33100,33250,33130,33130,33230,33250,33700,33800,34000,34330,34500,34680,34800,35000,35950,36350,37400,39200,39900,39930,39980,40000,40300,40500,40500,40600,41400,42000,42900,44900,43580,43580,43500,42500,42500,42500,42900,44700,44950,45000,45500,45500,45800,49000,56000,57000,57500,58650,58650,59500,61800,64300,64700,65200,68400,70900,72000,73000,73300,73650,74000,75500,75230,75700,75800,73300,73650,75500,74750,75230,73650,null,null,null,null,null,58500,57500,57900,58500,59700,59800,59850,59950,60000,59850,62700,62700,62700,62700,63700,63500,63500,63500,63800,63900,63900,64000,64000,64350,64350,64350,66000,66000,67800,67900,68000,68000,69550,69800,70000,70000,70500,71650,76400,81500,83750,85000,85000,88000,89700,89900],"n":431,"recent":[89800,12],"r3":[91000,8],"peak21":79000,"med21":72950,"last":[["2026-10-05",88000,22],["2026-10-08",98000,7],["2026-10-09",92000,16],["2026-10-11",89900,15],["2026-10-17",90000,20]],"est":91000,"estSrc":"3m"},"하남신장에코타운1단지|84":{"name":"하남신장에코타운1단지","region":"하남(신장)","pt":"84","m":[39300,40030,40380,40750,40750,40750,41500,41750,42850,42880,42850,42850,40900,41900,43150,42500,42750,43000,43000,43000,42500,42750,43000,43000,42750,42750,43500,43500,44300,44850,44850,45000,45000,45000,45600,45700,46500,46500,46700,47000,47250,47500,48000,49250,51700,52000,54000,54000,54500,54750,55000,54750,53000,54000,54000,54200,55000,54950,56000,56000,56500,57150,58000,59000,64000,68300,69500,69900,71000,72000,73000,77700,84000,84000,84900,84900,85000,86000,88900,89000,89480,89950,89480,89950,89980,89480,89950,89980,89980,90000,90000,null,null,null,90000,81500,73000,73000,73000,73750,74500,76000,76000,76000,76000,76750,76750,77250,77250,74900,74300,74250,74500,74250,74500,75750,76250,77250,78000,78000,78400,78800,80000,80000,80000,83000,83000,83000,83000,83400,83000,83000,83000,83600,83750,83000,84350,96650,99500,100000,100000,100000,88850],"n":260,"recent":[100000,3],"r3":[null,0],"peak21":94000,"med21":88000,"last":[["2026-03-30",94300,11],["2026-04-25",99000,13],["2026-05-16",100000,14],["2026-06-17",100000,12],["2026-06-25",109500,17]],"est":104200,"estSrc":"idx"},"래미안안양메가트리아|59":{"name":"래미안안양메가트리아","region":"안양(만안)","pt":"59","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,41800,42300,43000,43850,43500,44200,44500,46000,46250,46600,46850,46700,46500,46350,47150,50000,50000,51000,51800,51900,52700,53230,53250,53500,54000,54000,55000,55000,54250,53000,53200,54000,54000,54000,54700,55500,56600,57950,58800,59000,59800,60000,63000,65000,65850,65850,66000,67600,68500,68700,69500,70800,71800,73500,77500,78000,78850,79500,81000,81700,82500,82000,80000,79950,79450,78500,77600,78500,77000,75500,72250,70250,63500,60000,60000,60000,60950,62000,63000,64600,67500,68500,68500,68500,68500,68000,65000,64500,64500,65700,65800,67000,68000,68280,68650,69950,70000,70500,70550,70800,71000,71500,71800,72000,72000,72300,75150,77900,80000,81600,82000,83500,87000,88200,89500,90600,92000,94000,97000,97000],"n":947,"recent":[97000,46],"r3":[100750,18],"peak21":88800,"med21":79000,"last":[["2026-10-13",107300,21],["2026-10-13",97700,6],["2026-10-20",101000,22],["2026-10-31",107200,9],["2026-11-04",97000,4]],"est":100750,"estSrc":"3m"},"래미안안양메가트리아|84":{"name":"래미안안양메가트리아","region":"안양(만안)","pt":"84","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,52000,52000,52000,52650,53000,53500,54000,54000,54800,55500,56000,57600,58000,57900,58700,58950,59500,60000,60000,60500,61000,63000,63500,63850,64000,64800,65000,67500,68000,65850,65000,64950,65000,65000,65300,67000,68000,70000,70900,72500,72950,73500,75000,80000,82000,82000,82600,82700,83000,83500,84000,84380,84600,86150,90250,95850,97900,98500,99000,99450,99700,104150,107000,103500,95500,95500,96250,96250,96250,97500,98000,103500,95500,83000,79000,79250,79250,79250,79500,80500,81850,83000,84000,84050,84300,84800,83750,83000,82400,82200,82400,82650,84000,85000,85000,86500,86950,87000,87600,86900,86800,86700,86700,87000,87400,87700,88800,90250,91000,92000,94350,95000,97000,100000,100000,103000,105000,106000,107000,109000,110000],"n":865,"recent":[109550,36],"r3":[115000,5],"peak21":115000,"med21":98250,"last":[["2026-08-15",107000,7],["2026-08-19",115000,7],["2026-09-15",119400,18],["2026-09-17",124500,12],["2026-10-22",115000,16]],"est":115000,"estSrc":"3m"},"안양역한양수자인리버파크|59":{"name":"안양역한양수자인리버파크","region":"안양(만안)","pt":"59","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,50000,50500,50000,50000,50000,50500,50500,50500,50000,50000,50000,51100,63000,63000,64500,64500,64750,65000,67250,72800,77000,78500,78500,78500,77750,78500,77850,75700,74850,72900,70650,69500,68750,68000,66500,66500,65000,59000,59000,57500,59000,57500,59000,59800,59800,63000,63000,63000,62900,63000,62900,60000,60000,60000,60000,63880,63880,63750,63750,64000,64000,64700,64500,65000,65000,64000,65900,65000,66600,67800,69250,68900,69250,70350,70300,70350,70700,72350,72850,84700,84950,84950,85000,85000,85000],"n":114,"recent":[85000,10],"r3":[88000,3],"peak21":81000,"med21":76600,"last":[["2026-07-15",85000,9],["2026-07-25",86800,27],["2026-08-22",84000,17],["2026-09-12",88000,22],["2026-09-18",89500,8]],"est":86800,"estSrc":"idx"},"안양역한양수자인리버파크|84":{"name":"안양역한양수자인리버파크","region":"안양(만안)","pt":"84","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,65000,65000,65000,65000,65000,65000,65000,65150,65150,65150,65150,65000,null,null,null,null,76500,76500,83700,90900,90900,90900,90900,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,72000,72000,72000,72000,75750,76900,76900,77000,77500,77000,76800,77000,78000,78000,78500,78000,79600,79600,79600,79600,79500,79600,79500,76000,75500,75500,76750,76750,77500,79000,80000,80750,82000,82750,82750,84000,84500,87200,89500,94500,94500,94500,95000,96000],"n":53,"recent":[95000,9],"r3":[96000,1],"peak21":100000,"med21":95450,"last":[["2026-07-01",89500,13],["2026-07-11",96000,16],["2026-07-16",95000,9],["2026-07-29",96800,7],["2026-10-11",96000,6]],"est":97000,"estSrc":"idx"},"매탄위브하늘채|59":{"name":"매탄위브하늘채","region":"수원(영통)","pt":"59","m":[33850,33900,33950,33950,33900,33900,34000,34000,34000,34000,34200,34200,34200,34300,34330,34350,34000,34350,34400,34400,34400,34550,34800,35000,35000,35730,35500,35850,35900,36000,36400,36400,36700,36730,36900,37000,37000,37000,37000,37000,36850,36880,36800,36700,36750,37000,37300,37300,37500,37500,37500,37950,37800,37800,35750,36700,36750,36900,37600,38800,39400,40250,41800,42950,44900,47100,47000,47350,47200,47850,48000,48730,49500,49850,50900,51800,54000,56300,57000,57400,57800,59000,60750,61400,61000,61400,61400,61000,61400,61400,60500,58450,53500,52000,52000,49500,47000,47000,47400,48850,49000,49500,49900,50000,50950,51550,53000,53500,53500,53750,54000,54500,54500,54900,55000,55500,56000,56500,57500,58000,58400,59500,59300,59500,59500,59500,59600,59750,59800,59600,59700,59850,59800,60000,62650,63350,63900,64000,64000,64700,67900,70100,74000],"n":888,"recent":[70800,23],"r3":[74000,17],"peak21":66800,"med21":57150,"last":[["2026-10-22",78000,12],["2026-10-26",75000,19],["2026-10-28",80000,19],["2026-10-31",79000,16],["2026-11-01",80000,23]],"est":74000,"estSrc":"3m"},"매탄위브하늘채|84":{"name":"매탄위브하늘채","region":"수원(영통)","pt":"84","m":[43500,43300,43000,43200,43500,43500,43500,43700,44200,44100,44000,43800,43800,44000,43500,43200,42950,42730,42800,43300,43500,43800,43800,44000,44350,45000,44350,44000,43750,44000,44000,44000,44500,44730,45300,45550,45700,46500,46700,46700,46700,46200,46000,45000,45500,46000,46500,46750,47000,47000,47500,48000,48000,48000,47900,47950,47900,48200,49000,49500,50500,51000,51350,53800,59000,59880,61000,61650,62000,62000,62000,64300,65000,66000,66850,67400,68500,73250,75250,75800,77000,79000,80250,81000,81700,81350,80000,77000,74300,74150,73000,71000,69850,65250,63750,62700,62000,59500,59900,61000,61000,62000,62000,63000,64000,64950,67300,68250,69000,67400,67500,69000,69000,69750,70000,70000,70000,70000,71000,71000,71000,73000,73000,73000,74100,74200,73750,73750,74000,73750,73500,74000,74750,75000,74750,75000,74500,75150,75600,75700,76500,79700,81900],"n":1271,"recent":[81000,47],"r3":[84000,19],"peak21":87500,"med21":75800,"last":[["2026-10-31",83000,13],["2026-10-31",89000,4],["2026-10-31",86700,19],["2026-11-04",95000,15],["2026-11-09",89700,9]],"est":84000,"estSrc":"3m"},"래미안하이어스|59":{"name":"래미안하이어스","region":"군포(산본)","pt":"59","m":[40800,40800,40000,40800,41000,41050,41450,41450,42180,43000,43350,43700,43850,44250,44300,44100,44150,44450,44500,44600,45000,45330,45450,45500,45500,45350,45500,45800,46000,46130,46300,46600,47180,47700,49250,50050,50500,51750,51850,52750,53000,53250,54000,55000,55000,55000,55150,55150,55300,55000,55000,55000,55700,57700,59000,59250,59250,59900,60800,61250,62700,64500,64500,65000,68500,76500,77000,77000,76250,76250,76350,76050,76200,76350,78000,78000,78300,85500,87200,88500,88800,88900,91000,92000,93000,91500,91000,87500,86000,86000,86000,86000,86000,87000,86000,86000,66000,65500,66000,65850,68000,68000,69000,69500,71250,71250,73000,74000,74500,74000,73000,73500,73350,74000,74000,75500,76250,78000,78000,78500,78500,78000,77950,77800,77950,77850,77850,78500,79500,80000,81500,82150,83750,84500,85000,85000,88000,90000,91300,91800,92000,92600,94100],"n":337,"recent":[93600,22],"r3":[95000,11],"peak21":95000,"med21":86900,"last":[["2026-10-07",95000,10],["2026-10-09",99000,22],["2026-10-10",94000,19],["2026-10-17",92000,1],["2026-10-19",96500,18]],"est":95000,"estSrc":"3m"},"래미안하이어스|84":{"name":"래미안하이어스","region":"군포(산본)","pt":"84","m":[53800,53300,53000,53300,53300,53450,53450,53500,53750,54000,54000,53800,53700,53800,53700,53000,53500,53800,53800,54400,54730,54900,54950,55000,55800,55900,55620,55600,55700,55900,56000,56700,56900,57600,58900,59250,60000,60000,61000,61550,61930,62500,63000,63300,64000,65000,67000,70500,72800,74200,74000,72000,73650,73800,72100,72700,73500,73800,74550,75000,77000,78500,79000,79650,82000,88750,89500,89700,89000,89000,89750,90000,91000,91500,91500,91700,99500,108500,112500,118250,118500,118500,118500,118750,118000,118000,118250,118000,118000,118500,118000,113000,96500,91000,91000,88000,80000,80000,80000,82000,83000,83500,84750,89000,91000,92000,92000,91500,90250,85000,89300,89300,89400,89400,90000,90000,91000,92000,93500,95000,94850,97000,94000,93900,94000,93500,93800,94000,94500,97000,97000,99000,99000,99500,101500,102500,103400,104650,107000,109000,111250,113500,114000],"n":669,"recent":[114000,21],"r3":[115000,13],"peak21":124000,"med21":114500,"last":[["2026-09-23",114000,4],["2026-09-29",111000,20],["2026-10-03",116000,32],["2026-10-20",120000,29],["2026-10-31",124500,4]],"est":115000,"estSrc":"3m"},"매교역팰루시드|59":{"name":"매교역팰루시드","region":"수원(권선)","pt":"59","q":{},"recent":[null,0],"r3":[null,0],"peak21":null,"med21":null,"last":[],"est":null,"estSrc":"none","note":"2026년 8월 입주 신축(2,178세대). 국토부 아파트 매매 API에 아직 59㎡ 실거래가 없음(분양권 거래는 별도 API). 59㎡ 분양가 약 7.36~7.38억.","m":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},"화서주공4단지|59":{"name":"화서주공4단지","region":"수원(팔달)","pt":"59","m":[23950,23950,24000,25000,25200,25350,25800,26000,26450,26930,27000,27150,27150,26900,26750,26600,26600,26600,26850,27000,27100,27400,27600,28400,29000,29200,29200,29200,29100,28900,28800,28900,28900,29000,28800,28900,29000,29000,29000,29000,29200,29500,29700,29800,30050,30350,30550,31900,33400,34000,35000,35500,35000,34250,34000,33750,33500,33750,33750,34000,34500,35000,35900,36000,36800,42550,44580,44300,44750,44580,44750,45500,46000,46500,46500,47000,50000,58500,61150,64000,64250,64500,65500,65500,66150,65500,63750,63500,63500,63400,63300,62500,55500,52500,52000,49650,49650,50750,50500,50500,50500,51000,51350,51250,53000,52250,54000,55000,52000,52800,51900,52300,52150,52600,53150,53700,54000,55000,55800,56000,56800,57000,56900,56500,56500,56500,56700,57000,58700,59400,59500,62000,63000,65000,67500,74650,76250,77000,78500,80000,81450,84750,85450],"n":821,"recent":[85000,36],"r3":[88700,16],"peak21":69800,"med21":62000,"last":[["2026-10-14",86200,2],["2026-10-20",99000,10],["2026-10-21",96500,20],["2026-10-22",93000,10],["2026-10-31",93700,18]],"est":88700,"estSrc":"3m"}},"asof_reb":"2026-11-09","weekly":{"dates":["2026-08-24","2026-08-31","2026-09-07","2026-09-14","2026-09-21","2026-09-28","2026-10-05","2026-10-12","2026-10-19","2026-10-26","2026-11-02","2026-11-09"],"series":{"강남":[-0.11,-0.41,-0.35,-0.36,-0.42,-0.56,-0.34,-0.35,-0.31,-0.38,-0.39,-0.25],"서초":[-0.05,-0.23,-0.3,-0.26,-0.37,-0.33,-0.27,-0.27,-0.32,-0.35,-0.37,-0.26],"송파":[0.09,0.01,-0.02,-0.12,-0.14,-0.19,-0.19,-0.21,-0.13,-0.22,-0.17,-0.35],"강동":[0.21,0.2,0.2,0.17,0.15,0.11,0.13,0.14,0.09,0.04,0.03,-0.01],"성동":[0.1,0.15,0.19,0.05,0.12,0.07,0.09,0.12,0.21,0.08,0.07,-0.02],"서울":[0.29,0.22,0.2,0.16,0.13,0.09,0.12,0.16,0.13,0.09,0.07,0.07],"경기":[0.23,0.19,0.17,0.18,0.23,0.15,0.18,0.26,0.21,0.2,0.2,0.21],"과천":[0.0,0.22,0.22,0.2,0.19,0.18,0.15,0.15,0.18,0.2,0.21,0.21],"분당":[0.54,0.53,0.41,0.34,0.33,0.35,0.56,0.79,0.53,0.2,0.23,0.26],"성남수정":[0.35,0.22,0.25,0.13,0.25,0.12,0.29,0.13,0.2,0.11,0.24,0.16],"수지":[0.66,0.36,0.29,0.21,0.26,0.2,0.18,0.34,0.31,0.34,0.29,0.36],"기흥":[0.63,0.43,0.33,0.42,0.48,0.23,0.35,0.52,0.3,0.54,0.6,0.63],"영통":[0.75,0.65,0.47,0.61,1.09,0.37,0.62,0.69,0.52,0.58,0.43,0.6],"안양동안":[0.28,0.25,0.43,0.45,0.38,0.34,0.41,0.53,0.56,0.38,0.55,0.5],"하남":[0.37,0.31,0.47,0.27,0.38,0.25,0.35,0.41,0.42,0.33,0.27,0.32],"구리":[0.28,0.22,0.21,0.2,0.28,0.29,0.28,0.43,0.32,0.31,0.25,0.36],"남양주":[0.23,0.21,0.22,0.23,0.24,0.14,0.16,0.17,0.17,0.18,0.17,0.19],"군포":[0.45,0.39,0.35,0.36,0.38,0.29,0.27,0.72,0.53,0.58,0.57,0.56],"안양만안":[0.56,0.2,0.16,0.2,0.16,0.13,0.04,0.11,0.08,0.01,0.1,0.12]}},"monthlyIndex":{"months":["2018-12","2019-01","2019-02","2019-03","2019-04","2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-11","2019-12","2020-01","2020-02","2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08","2026-09","2026-10","2026-11"],"series":{"서울":[100.0,99.6,99.2,98.8,98.5,98.4,98.3,98.4,98.5,98.7,99.1,99.5,100.2,100.3,100.4,100.4,100.2,100.0,100.2,100.5,100.7,100.7,100.7,100.8,101.0,101.3,101.7,102.0,102.3,102.8,103.3,104.0,105.1,106.0,106.7,107.4,107.7,107.7,107.6,107.6,107.5,107.5,107.5,107.3,106.8,106.0,104.7,102.7,99.9,97.9,96.8,96.2,95.8,95.8,96.0,96.2,96.7,97.1,97.5,97.6,97.5,97.3,97.2,97.2,97.3,97.5,98.0,99.3,100.4,101.2,101.6,101.8,101.9,101.9,102.1,103.0,103.3,103.8,105.5,106.3,106.7,107.6,108.9,109.7,110.8,111.9,112.7,113.2,113.7,114.9,116.5,117.8,119.2,119.9,120.5,120.6],"송파":[100.0,99.3,98.9,98.5,98.3,98.2,98.2,98.4,98.5,98.8,99.3,99.9,100.9,100.9,100.6,100.1,99.4,99.1,99.4,99.8,99.8,99.8,99.9,99.9,100.2,100.8,101.4,101.8,102.3,103.1,103.8,104.5,105.8,106.9,107.9,108.9,109.3,109.4,109.3,109.3,109.3,109.2,109.2,109.0,108.6,107.8,105.6,103.3,100.5,99.0,98.5,98.5,98.5,99.2,100.3,101.3,102.5,103.4,103.9,104.2,104.1,103.7,103.7,103.8,104.1,104.4,105.1,107.6,109.8,111.2,111.5,111.8,112.0,112.2,113.5,116.4,117.1,118.3,122.5,124.4,125.9,127.6,130.8,133.2,135.4,137.1,137.5,136.8,137.0,138.6,140.7,142.3,143.0,142.4,141.3,140.6],"경기":[100.0,99.8,99.5,99.2,98.6,98.2,97.9,97.8,97.8,98.0,98.2,98.7,99.5,100.3,101.7,103.4,103.9,104.4,105.7,106.6,107.3,107.8,108.3,109.6,110.9,112.7,114.7,116.9,118.4,120.3,122.4,124.5,127.6,130.0,131.9,133.4,133.9,134.0,133.9,133.7,133.6,133.5,133.3,133.0,132.0,130.7,128.5,125.5,121.1,117.0,114.2,112.6,111.7,111.4,111.5,111.8,112.3,113.0,113.6,113.8,113.5,113.1,112.9,112.6,112.5,112.4,112.5,112.9,113.4,113.9,114.1,114.2,114.2,114.1,113.9,113.8,113.8,113.7,114.0,114.1,114.1,114.2,114.7,115.2,115.7,116.2,116.8,117.2,117.5,118.0,119.0,120.0,121.0,121.9,122.9,123.4],"남양주":[100.0,100.0,100.1,100.0,100.1,100.0,100.1,100.2,100.3,100.3,100.3,100.5,100.7,101.2,101.8,103.1,103.8,104.8,106.0,107.3,108.7,109.2,110.0,111.7,114.0,117.5,121.5,124.7,126.4,128.4,130.4,132.5,136.0,138.6,140.5,142.3,142.8,142.9,142.9,142.8,142.8,142.6,142.4,142.2,141.2,139.6,136.5,132.7,126.1,123.1,121.3,119.3,117.9,117.0,116.8,116.4,116.3,116.3,116.3,116.2,116.1,115.6,115.0,114.6,114.1,114.0,113.8,114.1,114.6,115.1,115.3,115.4,115.3,115.2,115.1,115.0,115.0,114.9,115.0,115.2,115.3,115.4,115.6,116.0,116.4,116.8,117.4,118.0,118.6,119.1,120.0,121.2,122.3,123.4,124.2,124.7],"구리":[100.0,100.0,100.1,100.4,100.5,100.8,101.1,101.4,101.8,102.4,102.7,103.7,104.9,106.2,109.4,114.1,115.8,117.3,119.6,121.3,123.5,124.3,124.9,125.7,126.4,127.2,128.9,130.7,131.7,133.2,134.4,135.6,137.8,139.3,140.9,142.3,142.6,142.6,142.5,142.5,142.3,142.1,141.8,141.6,141.0,140.0,138.3,136.6,131.8,129.0,127.3,126.2,125.3,124.7,124.4,124.2,124.0,124.3,124.4,124.6,124.4,124.3,124.3,124.2,124.2,124.3,124.5,124.7,125.0,125.5,125.8,126.0,126.0,125.9,125.8,125.8,125.8,125.8,125.9,125.9,125.9,126.0,126.5,128.2,129.1,130.1,132.6,134.3,135.8,137.5,139.7,141.7,143.1,144.5,146.4,147.3],"하남":[100.0,99.6,98.7,98.0,96.8,95.7,95.4,96.3,96.9,97.6,98.5,100.2,102.0,102.5,103.2,104.5,104.3,104.7,107.3,109.6,111.0,111.7,112.4,113.3,114.4,115.9,117.7,119.3,119.7,119.9,120.1,120.6,122.2,122.9,123.4,124.0,124.1,123.8,123.5,123.1,123.0,122.9,122.6,122.2,121.0,119.7,117.7,115.1,110.9,105.8,101.5,99.6,98.6,99.2,100.4,102.5,104.3,105.9,107.5,108.3,108.5,108.1,108.0,107.7,107.8,107.9,108.1,108.5,110.2,111.4,111.8,112.0,111.8,111.7,111.7,112.1,112.3,112.5,113.4,113.7,114.4,115.3,117.3,118.6,120.4,121.9,123.4,125.1,126.1,127.7,129.5,131.1,133.3,135.2,137.2,138.0],"분당":[100.0,99.1,98.3,97.7,96.9,96.3,96.1,96.6,96.9,97.9,98.6,99.6,101.0,101.0,101.0,100.7,100.5,100.3,100.4,101.6,102.4,103.0,103.7,105.0,107.0,108.9,110.3,111.2,111.9,112.5,112.9,114.1,115.5,116.5,117.1,117.8,118.1,118.2,118.1,118.1,118.2,118.4,118.6,118.6,118.2,117.6,116.6,114.5,111.7,108.8,105.6,104.5,103.9,104.0,104.9,106.3,107.5,108.9,109.9,110.3,110.3,109.5,109.1,108.6,108.4,108.6,109.8,111.3,112.7,114.1,114.5,114.6,114.8,114.7,114.6,115.2,115.7,116.6,120.1,121.9,123.1,126.1,131.4,134.1,136.7,139.0,140.9,142.1,143.0,144.8,148.0,150.7,154.2,156.4,159.7,160.5],"수지":[100.0,99.8,99.7,99.2,98.1,97.3,96.8,96.7,97.1,97.6,97.9,98.9,102.2,104.9,108.8,111.6,112.1,112.9,114.6,115.9,117.4,118.4,119.2,120.1,121.1,122.6,124.7,126.4,127.1,127.5,128.7,130.2,132.5,134.5,135.9,137.1,137.8,137.9,137.6,137.1,136.6,136.0,135.5,135.0,134.1,132.8,130.2,128.0,125.0,120.1,116.1,113.9,113.3,113.8,114.2,114.8,115.0,116.1,116.7,116.7,116.6,116.2,115.8,115.6,115.6,115.7,115.9,116.7,117.5,118.2,118.3,118.4,118.6,118.6,118.8,119.6,120.1,120.8,122.1,122.7,123.0,123.5,124.9,126.5,129.3,132.1,135.4,137.7,138.7,139.9,142.0,144.4,147.3,148.7,150.4,151.4],"안양동안":[100.0,99.8,99.4,99.0,97.8,97.3,96.9,96.7,96.8,97.2,97.6,98.5,100.5,101.3,102.6,104.4,105.4,106.0,107.1,107.9,108.5,109.0,109.5,110.4,111.6,113.0,114.8,118.3,121.8,126.7,131.7,136.3,141.0,143.9,146.8,149.1,149.3,148.9,148.6,148.0,147.9,147.8,147.7,147.4,146.2,144.3,141.3,136.5,130.8,126.6,124.2,122.4,121.1,120.7,120.4,120.6,120.9,121.9,123.8,124.7,124.8,124.1,123.4,122.4,121.8,122.5,123.4,123.9,124.5,125.6,126.0,126.7,127.2,127.4,127.5,128.0,128.2,128.3,129.6,130.7,131.8,133.0,135.1,136.2,138.5,140.7,143.0,145.6,147.1,149.5,152.7,154.6,156.3,158.8,161.9,163.6]}},"supply":{"dates":["2026-08-24","2026-08-31","2026-09-07","2026-09-14","2026-09-21","2026-09-28","2026-10-05","2026-10-12","2026-10-19","2026-10-26","2026-11-02","2026-11-09"],"series":{"동남권":[102.3,100.7,100.6,100.4,99.3,99.1,99.6,99.1,98.7,93.3,92.5,92.4],"경기":[102.4,101.8,101.8,102.1,103.1,102.2,102.7,103.7,103.4,103.7,103.2,103.5],"경부1권":[107.3,105.4,104.8,104.8,105.1,105.0,105.9,108.6,107.9,107.5,108.5,108.8],"동부1권":[110.4,110.5,110.9,110.7,112.2,111.4,112.4,113.4,112.4,112.8,111.1,111.1]}}};
+/* ================= 상태 ================= */
+const KEY='newhome_v5';
+const DEF={
+  src:'manual', sheetUrl:'', cash:5626, cashAsof:'2026-11-13', pension:7300, retire:3000, useOpt:false, save:425,
+  sell:45000, debt:24800, when:'2027', trigger:45000,
+  buy:85000, big:false, zone:'free', cap:true, rate:4.3, stress:1.5, term:30, income:10476, other:0,
+  acqDate:'2021-09-15', saleDate:'2027-12-31', adj:true, live:5,
+  newDate:'2026-12-01', isRight:true, doneDate:'2028-03-01',
+  checks:{}, todos:[], pt:'59', gapSel:'', idxSet:'경기권', theme:'auto', gapMode:'gap', gapPeriod:'2019', gapPick:{}, gapSort:{k:'chg',d:1}, dots:true
+};
+let S=load();
+function load(){
+  let s={};
+  try{ s=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  if(!Object.keys(s).length){ // v4 이전값 가져오기
+    try{ const o=JSON.parse(localStorage.getItem('rePlan_v4')||'{}');
+      const n=k=>parseFloat(o[k]); if(!isNaN(n('e-sellprice'))) s.sell=n('e-sellprice');
+      if(!isNaN(n('e-debt'))) s.debt=n('e-debt'); if(!isNaN(n('e-save'))) s.save=n('e-save');
+      if(!isNaN(n('e-pension'))) s.pension=n('e-pension'); if(!isNaN(n('e-retire'))) s.retire=n('e-retire');
+    }catch(e){}
+  }
+  return Object.assign({},DEF,s);
 }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 
-// ─── 저장/불러오기
-function saveAndRefresh(){
-  try{
-    const fields=['e-aptname','e-area','e-buytime','e-buyprice','e-interior','e-acqtax','e-sellprice','e-mktprice','e-lasttrade','e-maxprice','e-debt','e-rate','e-rateend','e-monthint','e-monthprin','e-minus','e-invest','e-sub','e-infinite','e-pension','e-retire','e-income','e-save','e-spend','e-child','e-birthyear','e-work1','e-work2'];
-    const data={};fields.forEach(id=>{const el=g(id);if(el)data[id]=el.value;});
-    localStorage.setItem('rePlan_v4',JSON.stringify(data));
-  }catch(e){}
-  refreshAll();
+/* ================= 유틸 ================= */
+const $=id=>document.getElementById(id);
+const el=(t,c,txt)=>{const e=document.createElement(t); if(c) e.className=c; if(txt!=null) e.textContent=txt; return e;};
+function won(m){ // 만원 → 'X억 Y만'
+  if(m==null||isNaN(m)) return '—';
+  const neg=m<0; m=Math.round(Math.abs(m));
+  let s; if(m>=10000){const ok=Math.floor(m/10000),r=m%10000; s=r?ok+'억 '+r.toLocaleString()+'만':ok+'억';} else s=m.toLocaleString()+'만';
+  return (neg?'−':'')+s;
 }
-function loadSaved(){
-  try{
-    const raw=localStorage.getItem('rePlan_v4');
-    if(!raw)return;
-    const data=JSON.parse(raw);
-    Object.entries(data).forEach(([id,v])=>{const el=g(id);if(el)el.value=v;});
-  }catch(e){}
-}
+const eok=m=>m==null?'—':(m/10000).toFixed(2).replace(/0$/,'')+'억';
+const pct=(v,d=1)=>v==null||isNaN(v)?'—':(v>0?'+':'')+v.toFixed(d)+'%';
+function pmt(P,ratePct,years){ if(P<=0) return 0; const r=ratePct/100/12,n=years*12; return r===0?P/n:P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1); }
+function toast(t){const x=$('toast');x.textContent=t;x.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>x.style.display='none',2200);}
+function svgEl(t,a){const e=document.createElementNS('http://www.w3.org/2000/svg',t); for(const k in a) e.setAttribute(k,a[k]); return e;}
 
-// ─── 전체 갱신
-function refreshAll(){
-  const d=getData();
-  txt('e-cost',fmt(d.buyprice+d.interior+d.acqtax));
-  const mp=d.monthint+d.monthprin;
-  txt('e-monthpay',fmt(mp)+'원');
-  const cash=d.minus+d.invest+d.sub+d.infinite;
-  txt('e-avail-cash',fmt(cash));
-  const surp=d.income-d.save-d.spend-mp;
-  const sel=g('e-surplus');sel.textContent=(surp>=0?'+':'')+fmt(surp)+'원';sel.style.color=surp>=0?'var(--green)':'var(--red)';
-  const sy=d.birthyear+7;
-  txt('e-school',sy+'년 3월');
-  const net=d.sellprice-d.debt,total=net+cash;
-  txt('m-sellprice',fmt(d.sellprice));txt('m-debt',fmt(d.debt));
-  const nel=g('m-net');nel.textContent=fmt(net);nel.style.color=net>0?'var(--green)':'var(--red)';
-  txt('m-total',fmt(total));
-  const now=new Date();
-  g('hdr-date').textContent=now.getFullYear()+'.'+(now.getMonth()+1).toString().padStart(2,'0')+'.'+now.getDate().toString().padStart(2,'0')+' 기준';
-  txt('sc-a-avail','약 '+fmt(total));txt('sc-e-invest','약 '+fmt(net));
-  g('sc-deadline').innerHTML='⏰ 핵심 마감: <strong>'+sy+'년 3월 '+d.child+' 초등학교 입학</strong> — 거주지 확정 필수';
-  g('tl-deadline').textContent='🏫 '+d.child+'('+d.birthyear+'년생) '+sy+'년 3월 초등학교 입학 — 최소 1년 전 전입신고 필요';
-  txt('tl-school-year',sy+'년 3월 · 마감');
-  txt('tl-school-title',d.child+' 초등학교 입학 — 거주지 확정 필수');
-  txt('tl-school-desc',d.child+'('+d.birthyear+'년생) 초등 입학. 학교 배정 시스템상 최소 6개월~1년 전 전입신고 권장.');
-  txt('tl-2026','코오롱 호가 4~4.5억. 희망 매도가 '+fmt(d.sellprice)+' 목표. 연 저축 '+fmt(d.save*12)+' / 월 소득 '+fmt(d.income)+'.');
-  g('as-sell').value=d.sellprice;g('as-save').value=d.save;g('i-sell').value=d.sellprice;
-  txt('opt-pension-amt','+약 '+fmt(Math.round(d.pension*0.6)));
-  txt('opt-retire-amt','+약 '+fmt(d.retire));
-  calcAsset();calc();
-}
-
-// ─── 시기별 가용자산
-function calcAsset(){
-  const d=getData();
-  const sell=parseInt(g('as-sell').value)||d.sellprice;
-  const saveM=parseInt(g('as-save').value)||d.save;
-  const newLoan=parseInt(g('as-newloan').value)||50000;
-  const optP=g('opt-pension').checked,optR=g('opt-retire').checked;
-  txt('as-sell-lbl',fmt(sell));txt('as-save-lbl','월 '+saveM.toLocaleString()+'만');txt('as-loan-lbl',fmt(newLoan));
-  const cash=d.minus+d.invest+d.sub+d.infinite;
-  const house=sell-d.debt;
-  const optAmt=(optP?Math.round(d.pension*0.6):0)+(optR?d.retire:0);
-  const f26=cash,f27=cash+saveM*12,f28=cash+saveM*24;
-  const t26=house+f26+optAmt,t27=house+f27+optAmt,t28=house+f28+optAmt;
-  ['26','27','28'].forEach(y=>{const r=g('y'+y+'-opt-row');if(r)r.style.display=optAmt>0?'flex':'none';txt('y'+y+'-opt','+'+fmt(optAmt));});
-  txt('y26-house',fmt(house));txt('y26-cash',fmt(f26));g('y26-total').textContent='약 '+fmt(t26);txt('y26-note','→ 대출 '+fmt(newLoan)+' 포함 매수 가능: 약 '+fmt(t26+newLoan));
-  txt('y27-house',fmt(house));txt('y27-fin',fmt(f27)+' (+'+fmt(saveM*12)+')');g('y27-total').textContent='약 '+fmt(t27);txt('y27-note','→ 대출 '+fmt(newLoan)+' 포함 매수 가능: 약 '+fmt(t27+newLoan));
-  txt('y28-house',fmt(house));txt('y28-fin',fmt(f28)+' (+'+fmt(saveM*24)+')');g('y28-total').textContent='약 '+fmt(t28);txt('y28-note','→ 대출 '+fmt(newLoan)+' 포함 매수 가능: 약 '+fmt(t28+newLoan));
-  const monthly=mPay(newLoan,5,30);
-  txt('as-monthly',Math.round(monthly/10000)+'만원');
-  const surp=d.income-Math.round(monthly/10000);
-  const sel=g('as-surplus');sel.textContent=(surp>=0?'+':'')+surp+'만원';sel.style.color=surp>=200?'var(--green)':surp>=0?'var(--amber)':'var(--red)';
-  txt('bg26',fmt(t26+newLoan));txt('bg27',fmt(t27+newLoan));txt('bg28',fmt(t28+newLoan));
-}
-
-// ─── 대출 계산기
-function calc(){
-  const d=getData();
-  const sell=parseInt(g('i-sell').value)||d.sellprice,buy=parseInt(g('i-buy').value)||82000;
-  const rate=parseInt(g('i-rate').value)/10,term=parseInt(g('i-term').value)||30;
-  txt('o-sell',fmt(sell));txt('o-buy',fmt(buy));g('o-rate').textContent=rate.toFixed(1)+'%';g('o-term').textContent=term+'년';
-  const cash=d.minus+d.invest+d.sub+d.infinite,net=sell-d.debt,eq=net+cash,loan=Math.max(0,buy-eq);
-  txt('r-net',fmt(net));txt('r-cash',fmt(cash));txt('r-eq',fmt(eq));txt('r-loan',loan>0?fmt(loan):'불필요');
-  if(loan>0){
-    const m=mPay(loan,rate,term),ti=m*term*12-loan*10000,sp=d.income-Math.round(m/10000);
-    txt('r-pay',Math.round(m/10000)+'만원');txt('r-int',Math.round(ti/10000).toLocaleString()+'만원');
-    const el=g('r-left');el.textContent=(sp>=0?'+':'')+sp+'만원';el.style.color=sp>=200?'var(--green)':sp>=0?'var(--amber)':'var(--red)';
-  }else{txt('r-pay','—');txt('r-int','—');txt('r-left','—');}
-}
-
-// ─── UI
-function switchPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));g('page-'+id).classList.add('active');g('tab-'+id).classList.add('active');document.querySelector('.content').scrollTop=0;}
-function toggleSc(id){g('sc-'+id).classList.toggle('open');}
-function switchCalcTab(id){g('panel-asset').style.display=id==='asset'?'block':'none';g('panel-loan').style.display=id==='loan'?'block':'none';g('ctab-asset').className='ctab '+(id==='asset'?'on':'off');g('ctab-loan').className='ctab '+(id==='loan'?'on':'off');}
-
-// ─── 매물 검색
-const APT={'대성코오롱':{naver:'남양주 대성코오롱',hogang:'남양주시/덕소동/강산마을대성코오롱',price:'4억~4.5억',area:'59㎡',note:'현재 거주 중 ⭐',hi:true},'라온프라이빗리버포레':{naver:'남양주 덕소 라온프라이빗리버포레',hogang:'남양주시/덕소동/덕소강변라온프라이빗리버포레',price:'6억~6.5억',area:'59㎡',note:'2028.03 입주 예정'},'서희스타힐스':{naver:'남양주 덕소 서희스타힐스',hogang:'남양주시/덕소동/덕소강변서희스타힐스',price:'6.4억~6.8억',area:'59~74㎡',note:'최근 실거래 활발'},'인창e편한세상2차':{naver:'구리 인창 e편한세상2차',hogang:'구리시/인창동/인창e편한세상2차',price:'8억~8.5억',area:'59㎡',note:'시나리오 A 1순위'},'한일베라체':{naver:'구리 한일베라체',hogang:'구리시/인창동/한일베라체',price:'9억 이상',area:'—',note:'★ 관심 후보'},'다산e편한세상자이':{naver:'다산 e편한세상자이',hogang:'남양주시/다산동/다산e편한세상자이',price:'8억 8,000만',area:'59㎡',note:'초품아 · 8호선 인접'},'한강반도유보라':{naver:'다산 한강반도유보라',hogang:'남양주시/다산동/다산한강반도유보라',price:'8억 8,000만',area:'84㎡',note:'넓은 84㎡ 평형'},'신장에코타운':{naver:'하남 신장에코타운',hogang:'하남시/신장동/하남신장에코타운1단지',price:'8억 8,000만',area:'59㎡',note:'하남 권역'},'성남한신':{naver:'성남 신흥동 한신',hogang:'성남시/신흥동/한신',price:'8억',area:'59㎡',note:'처갓댁 송파 접근 유리'}};
-const TRADES={'대성코오롱':[{d:'26.05.23',a:'59.94㎡',f:'12층',p:'4억 1,500만'},{d:'26.03.05',a:'59.94㎡',f:'6층',p:'4억 900만'}],'라온프라이빗리버포레':[{d:'26.04.14',a:'59.92㎡',f:'12층',p:'6억 4,800만'},{d:'26.01.29',a:'59.92㎡',f:'6층',p:'6억'}],'서희스타힐스':[{d:'26.05.20',a:'74.51㎡',f:'7층',p:'6억 7,500만'},{d:'26.04.12',a:'59.79㎡',f:'18층',p:'6억 4,400만'}]};
-function quickSelect(el,name){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');g('apt-input').value=name;renderProp(name);}
-function doSearch(){const v=g('apt-input').value.trim();if(!v){alert('아파트명을 입력해주세요');return;}const k=Object.keys(APT).find(k=>k.includes(v)||v.includes(k.replace(/\s/g,'')))||null;renderProp(k||v);}
-function renderProp(key){
-  const data=APT[key];const name=key;
-  g('default-trades').style.display='none';
-  const nq=encodeURIComponent(data?data.naver:name),hq=encodeURIComponent(data?data.hogang:name);
-  const nu=`https://m.land.naver.com/search/result/${nq}`,hu=data?`https://hogangnono.com/apt/${hq}/0`:`https://hogangnono.com/search?q=${hq}`;
-  let html=`<div class="pcard ${data&&data.hi?'hi':''}"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><div class="pname">${name}</div>${data&&data.hi?'<span class="badge bg">현재 집</span>':data?'<span class="badge bb">후보 매물</span>':'<span class="badge bx">검색</span>'}</div>`;
-  if(data)html+=`<div class="pprice">${data.price}</div><div class="pmeta">${data.area} · ${data.note}</div>`;
-  html+=`<div class="lbtns"><a class="lbtn lbtn-n" href="${nu}" target="_blank">🟢 네이버 부동산</a><a class="lbtn lbtn-h" href="${hu}" target="_blank">🟠 호갱노노</a><a class="lbtn lbtn-full" href="${nu}" target="_blank">전체 매물 목록 보기 →</a></div>`;
-  if(TRADES[key]){html+=`<div style="margin-top:12px;border-top:.5px solid var(--border);padding-top:10px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">저장된 실거래</div>`;TRADES[key].forEach(t=>{html+=`<div class="trow"><div><div style="font-size:12px;font-weight:500">${name} ${t.a} ${t.f}</div></div><div style="text-align:right"><div class="tamt">${t.p}</div><div style="font-size:10px;color:var(--text3)">${t.d}</div></div></div>`;});}
-  html+='</div>';
-  g('prop-results').innerHTML=html;document.querySelector('.content').scrollTop=0;
-}
-
-// ═══════════════════════════════════════
-//  PWA 설치 로직
-// ═══════════════════════════════════════
-let deferredPrompt=null;
-
-// Service Worker 등록
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js')
-      .then(r=>console.log('SW 등록 완료',r.scope))
-      .catch(e=>console.log('SW 등록 실패',e));
+/* ================= 차트 (SVG) =================
+ series: [{name,color,values:[..]}], labels:[..], opts:{refs:[{y,color,label}], fmt}
+*/
+function lineChart(host,labels,series,opts={}){
+  host.replaceChildren();
+  const W=Math.max(300,host.clientWidth||340),H=opts.h||220,m={t:12,r:26,b:26,l:48};
+  const all=series.flatMap(s=>s.values.filter(v=>v!=null)).concat((opts.refs||[]).map(r=>r.y)).concat((opts.points||[]).flatMap(p=>p.xy.map(q=>q[1])));
+  if(!all.length){host.textContent='데이터 없음';return;}
+  let lo=Math.min(...all),hi=Math.max(...all); const pad=(hi-lo)*0.08||1; lo-=pad; hi+=pad;
+  if(opts.zero){lo=Math.min(lo,0);hi=Math.max(hi,0);}
+  const x=i=>m.l+(W-m.l-m.r)*(labels.length<2?0.5:i/(labels.length-1));
+  const y=v=>m.t+(H-m.t-m.b)*(1-(v-lo)/(hi-lo));
+  const fmt=opts.fmt||(v=>v.toFixed(0));
+  const svg=svgEl('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':opts.aria||'차트'});
+  const nt=4; for(let i=0;i<=nt;i++){const v=lo+(hi-lo)*i/nt,yy=y(v);
+    svg.appendChild(svgEl('line',{x1:m.l,x2:W-m.r,y1:yy,y2:yy,style:'stroke:var(--grid)'}));
+    const t=svgEl('text',{x:m.l-6,y:yy+4,'text-anchor':'end'}); t.textContent=fmt(v); svg.appendChild(t);}
+  const step=Math.ceil(labels.length/(W<420?4:6)); 
+  labels.forEach((lb,i)=>{ if(i%step && i!==labels.length-1) return; const t=svgEl('text',{x:x(i),y:H-6,'text-anchor':'middle'}); t.textContent=opts.xfmt?opts.xfmt(lb):lb; svg.appendChild(t);});
+  (opts.refs||[]).forEach(r=>{svg.appendChild(svgEl('line',{x1:m.l,x2:W-m.r,y1:y(r.y),y2:y(r.y),style:'stroke:'+r.color,'stroke-dasharray':'5 4','stroke-width':1.6}));});
+  (opts.points||[]).forEach(p=>{ const g=svgEl('g',{style:'fill:'+p.color+';opacity:'+(p.op||.38)});
+    p.xy.forEach(([xi,v])=>{ if(xi<0||xi>labels.length-1) return; g.appendChild(svgEl('circle',{cx:x(xi).toFixed(1),cy:y(v).toFixed(1),r:p.r||2.2})); }); svg.appendChild(g); });
+  series.forEach(s=>{ let d='',dd='',pen=false; const F=s.fill||[];
+    s.values.forEach((v,i)=>{ if(v==null){pen=false;return;} const P=x(i).toFixed(1)+','+y(v).toFixed(1);
+      if(pen&&(F[i]||F[i-1])){ dd+='M'+x(i-1).toFixed(1)+','+y(s.values[i-1]).toFixed(1)+'L'+P; d+='M'+P; } else d+=(pen?'L':'M')+P; pen=true; });
+    svg.appendChild(svgEl('path',{d,fill:'none',style:'stroke:'+s.color+(s.dash?';stroke-dasharray:6 4':''),'stroke-width':s.w||2.4,'stroke-linejoin':'round','stroke-linecap':'round'}));
+    if(dd) svg.appendChild(svgEl('path',{d:dd,fill:'none',style:'stroke:'+s.color+';opacity:.55','stroke-width':(s.w||2.4)-0.6,'stroke-dasharray':'3 4'}));
+    if(s.dots) s.values.forEach((v,i)=>{ if(v!=null) svg.appendChild(svgEl('circle',{cx:x(i),cy:y(v),r:3,style:'fill:'+s.color})); });
   });
+  const vl=svgEl('line',{y1:m.t,y2:H-m.b,style:'stroke:var(--ref)',display:'none'}); svg.appendChild(vl);
+  const hit=svgEl('rect',{x:m.l,y:m.t,width:W-m.l-m.r,height:H-m.t-m.b,fill:'transparent'}); svg.appendChild(hit);
+  host.appendChild(svg);
+  const tip=el('div','tip'); tip.hidden=true; host.appendChild(tip);
+  const move=ev=>{ const r=svg.getBoundingClientRect(); const px=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left; const sx=px*W/r.width;
+    let i=Math.round((sx-m.l)/(W-m.l-m.r)*(labels.length-1)); i=Math.max(0,Math.min(labels.length-1,i));
+    vl.setAttribute('x1',x(i)); vl.setAttribute('x2',x(i)); vl.setAttribute('display','');
+    tip.replaceChildren(el('div',null,opts.tipLabel?opts.tipLabel(labels[i]):labels[i]));
+    series.forEach(s=>{ const v=s.values[i]; if(v==null) return; const d=el('div'); const b=el('span'); b.style.color=s.color; b.textContent='● '; d.append(b,document.createTextNode(s.name+' '+(opts.tipFmt||fmt)(v))); tip.appendChild(d); });
+    tip.hidden=false; const hx=x(i)/W*r.width; tip.style.left=Math.max(0,Math.min(hx+10,r.width-tip.offsetWidth-2))+'px'; tip.style.top='4px'; };
+  hit.addEventListener('pointermove',move); hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{tip.hidden=true;vl.setAttribute('display','none');});
 }
 
-// Android: 설치 프롬프트 감지
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();
-  deferredPrompt=e;
-  // 배너 표시
-  g('install-banner').classList.add('show');
-});
+/* ================= 데이터 헬퍼 ================= */
+let CX=DATA.complexes;
+const ME='덕소대성코오롱(현재집)|59';
+let MONTHS=DATA.months; let SERC={};
+// 거래가 없는 중간 구간은 앞뒤 값을 직선으로 이음(f=true, 그래프에서 점선)
+function interp(m){ const v=(m||[]).slice(), f=v.map(()=>false); let last=-1;
+  for(let i=0;i<v.length;i++){ if(v[i]==null) continue; if(last>=0&&i-last>1) for(let j=last+1;j<i;j++){ v[j]=Math.round(v[last]+(v[i]-v[last])*(j-last)/(i-last)); f[j]=true; } last=i; }
+  return {v,f}; }
+const getSer=k=>SERC[k]||(SERC[k]=interp(CX[k]&&CX[k].m));
+function gapSer(k){ const a=getSer(k), b=getSer(ME); return {v:a.v.map((x,i)=>x!=null&&b.v[i]!=null?x-b.v[i]:null), f:a.f.map((x,i)=>x||b.f[i])}; }
+const mIdx=m=>MONTHS.indexOf(m);
+let PTS=null, PTS_LOADING=false;
+async function loadPts(){ if(PTS||PTS_LOADING) return; PTS_LOADING=true;
+  try{ const r=await fetch('data/trades_pts.json',{cache:'no-cache'}); if(r.ok){ PTS=await r.json(); if($('p-gap').classList.contains('on')) renderGap(); } }catch(e){} PTS_LOADING=false; }
+// 거래일 → 월 인덱스(소수): 2015-01-01 기준 일수
+function ptX(days){ const base=new Date((PTS&&PTS.start||'2015-01-01')+'T00:00:00Z'); const d=new Date(base.getTime()+days*86400000);
+  const y=d.getUTCFullYear(), m=d.getUTCMonth(); const m0=+MONTHS[0].slice(0,4)*12+(+MONTHS[0].slice(5)-1);
+  return (y*12+m-m0)+(d.getUTCDate()-1)/31; }
+function yearAvg(arr){ const out={}; MONTHS.forEach((m,i)=>{ const v=arr[i]; if(v==null) return; const y=m.slice(0,4); (out[y]=out[y]||[]).push(v); });
+  const r={}; for(const y in out) r[y]=Math.round(out[y].reduce((a,b)=>a+b,0)/out[y].length); return r; }
+const houseEst=()=>CX[ME].est;
+function gapInfo(key){
+  const c=CX[key], me=CX[ME];
+  const gNow=c.est!=null&&me.est!=null?c.est-me.est:null;
+  const g=gapSer(key);
+  const y21=MONTHS.map((m,i)=>m.startsWith('2021')?g.v[i]:null).filter(v=>v!=null);
+  const g21=y21.length?Math.round(y21.reduce((a,b)=>a+b,0)/y21.length):null;
+  const y23=MONTHS.map((m,i)=>m.startsWith('2023')?g.v[i]:null).filter(v=>v!=null);
+  const g23=y23.length?Math.round(y23.reduce((a,b)=>a+b,0)/y23.length):null;
+  let gMin=null,mMin=null; const s19=Math.max(0,mIdx('2019-01'));
+  for(let i=s19;i<g.v.length;i++){ if(g.v[i]!=null&&(gMin==null||g.v[i]<gMin)){gMin=g.v[i];mMin=MONTHS[i];} }
+  return {gNow,g21,g23,chg:gNow!=null&&g21!=null?gNow-g21:null,chg23:gNow!=null&&g23!=null?gNow-g23:null,gMin,mMin};
+}
+const LINKS={naver:n=>'https://new.land.naver.com/search?ms=&a=APT&e=RETAIL&query='+encodeURIComponent(n),hogang:n=>'https://hogangnono.com/search?q='+encodeURIComponent(n)};
 
-// Android 설치 버튼
-g('install-btn').addEventListener('click',async()=>{
-  if(!deferredPrompt)return;
-  deferredPrompt.prompt();
-  const{outcome}=await deferredPrompt.userChoice;
-  console.log('설치 선택:',outcome);
-  deferredPrompt=null;
-  g('install-banner').classList.remove('show');
-});
-
-function dismissBanner(){g('install-banner').classList.remove('show');}
-
-// 앱으로 이미 실행 중이면 배너 숨김
-if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone){
-  g('install-banner').style.display='none';
+/* ================= 신호 판정 ================= */
+function signals(){
+  const W=DATA.weekly, sp=DATA.supply, n=W.dates.length;
+  const last=(k,j=0)=>W.series[k][n-1-j];
+  const neg2=k=>last(k)<0&&last(k,1)<0, neg1=k=>last(k)<0;
+  const out=[];
+  // 1 한강벨트
+  let st='ok'; if(neg2('성동')||neg2('강동')) st='bad'; else if(neg1('성동')||neg1('강동')) st='warn';
+  out.push({st,t:'하락의 한강벨트 확산',x:`성동 ${pct(last('성동'),2)} · 강동 ${pct(last('강동'),2)} (강남 ${pct(last('강남'),2)}, 송파 ${pct(last('송파'),2)})`});
+  // 2 경기 고가지
+  const bd=last('분당'),gc=last('과천'); st=(bd<0||gc<0)?'bad':(bd<0.1||gc<0.1)?'warn':'ok';
+  const bdPeak=Math.max(...W.series['분당'].slice(-8)); if(st==='ok'&&bd<bdPeak/2) st='warn';
+  out.push({st,t:'경기 고가지(분당·과천) 둔화',x:`분당 ${pct(bd,2)} (8주 최고 ${pct(bdPeak,2)}) · 과천 ${pct(gc,2)}`});
+  // 3 경기 수급
+  const gs=sp.series['경기']; const below=gs.slice(-3).filter(v=>v<100).length;
+  st=below>=3?'bad':gs[gs.length-1]<100?'warn':'ok';
+  out.push({st,t:'경기 매매수급지수',x:`${gs[gs.length-1]} (100 미만이면 매도자 우위) · 동남권 ${sp.series['동남권'].slice(-1)[0]}`});
+  // 4 남양주·동부1권
+  const nm=W.series['남양주'].slice(-4), db=sp.series['동부1권'].slice(-1)[0];
+  const shrinking=nm.every((v,i)=>i===0||v<nm[i-1]);
+  st=(nm[3]<0||db<100)?'bad':shrinking?'warn':'ok';
+  out.push({st,t:'남양주(덕소)·동부1권',x:`남양주 주간 ${pct(nm[3],2)} · 동부1권 수급 ${db}`});
+  // 5 강남3구
+  const g3=['강남','서초','송파'].map(k=>last(k)); const avg=g3.reduce((a,b)=>a+b,0)/3;
+  let wks=0; for(let j=0;j<n;j++){ const a=['강남','서초','송파'].map(k=>W.series[k][n-1-j]).reduce((x,y)=>x+y,0)/3; if(a<0) wks++; else break; }
+  out.push({st:avg<0?'warn':'ok',t:'강남3구 흐름',x:`평균 ${pct(avg,2)} · ${wks>=n?n+'주 이상':wks+'주'} 연속 하락`});
+  return out;
+}
+function verdict(sig){
+  const bad=sig.filter(s=>s.st==='bad').length, gyeonggiBad=sig[2].st!=='ok'||sig[3].st==='bad';
+  if(gyeonggiBad) return '⚠ 경기 수급·남양주에 경고가 켜졌습니다. 2018년처럼 1~2개월 내 동반 하락 전환 가능성을 점검할 시점입니다.';
+  if(bad||sig[0].st!=='ok') return '강남 약세가 한강벨트로 번지는 중이지만 경기 수급은 아직 매수 우위입니다. 2020년형 ‘풍선’ 국면과 비슷합니다.';
+  return '경기·남양주 모두 정상 범위입니다.';
 }
 
-// iOS 감지 → 헤더 "앱 설치" 버튼 표시
-const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.MSStream;
-const isStandalone=window.navigator.standalone;
-if(isIOS&&!isStandalone){
-  g('ios-install-btn').classList.add('show');
+/* ================= 렌더: 홈 ================= */
+function renderHome(){
+  const now=new Date(), dl=new Date('2028-11-30'), start=new Date('2026-06-01');
+  const days=Math.ceil((dl-now)/86400000);
+  $('ddayBig').textContent='D-'+days; $('ddaySub').textContent=`전입 마감까지 약 ${Math.floor(days/30)}개월 · 2029.3 입학 · 2028.3 라온 입주`;
+  $('ddayBar').style.width=Math.min(100,Math.max(0,(now-start)/(dl-start)*100)).toFixed(0)+'%';
+  const e=calcMoney();
+  $('hHouse').textContent=eok(houseEst()); { const L=CX[ME].last[CX[ME].last.length-1]; $('hHouseS').textContent=`최근 거래 ${L[0].slice(2).replace(/-/g,'.')} ${eok(L[1])}(${L[2]}층)`; }
+  $('hNet').textContent=won(e.net); $('hCash').textContent=won(S.cash); $('hCashS').textContent=(S.src==='sheet'?'시트 ':'직접 입력 ')+(S.cashAsof||'');
+  $('hEq').textContent=won(e.equity);
+  const sig=signals(); $('sigAsof').textContent=DATA.asof_reb+' 기준';
+  const L=$('sigList'); L.replaceChildren();
+  sig.forEach(s=>{const r=el('div','sig'); r.append(el('div','dot '+s.st)); const b=el('div'); b.append(el('div','t',s.t),el('div','x',s.x)); r.appendChild(b); L.appendChild(r);});
+  $('sigVerdict').textContent=verdict(sig);
+  // 갭 top3
+  const rows=Object.keys(CX).filter(k=>k!==ME&&!k.startsWith('덕소')).map(k=>({k,...gapInfo(k)})).filter(r=>r.chg!=null).sort((a,b)=>a.chg-b.chg).slice(0,3);
+  const H=$('homeGap'); H.replaceChildren();
+  rows.forEach(r=>{const c=CX[r.k]; const d=el('div','row'); d.append(el('span','k',c.name+' '+c.pt+'㎡'));
+    const v=el('span','v'); v.textContent=eok(r.g21)+' → '+eok(r.gNow)+' '; const s=el('span',r.chg<0?'ok':'bad',`(${r.chg<0?'':'+'}${eok(r.chg)})`); v.appendChild(s); d.appendChild(v); H.appendChild(d);});
+  // todo
+  const T=$('homeTodo'); T.replaceChildren();
+  allTodos().filter(t=>!S.checks[t.id]).slice(0,3).forEach(t=>T.appendChild(todoRow(t)));
+  // timeline
+  const TL=[
+    ['2026.11','지금','주간 하락신호 모니터링 · 갭 추적 · NH 가조회',now>new Date('2026-11-01')],
+    ['2027','매도 결정 게이트',`현재집 ${eok(S.trigger)} 이상 매도 가능 여부 판단`,false,true],
+    ['2028.03','라온프라이빗 999세대 입주','덕소 구축 매매·전세 압박 예상',false],
+    ['2028.11','전입 마감','연우 초등 배정 위해 거주지 확정',false,true],
+    ['2029.03','연우 초등 입학 · 덕소3구역 3,308세대 입주','현재집 고정금리(3.469%) 만료',false],
+    ['2032','덕소5B 재개발 입주(플랜④)','일정상 마감 이후',false]
+  ];
+  const tl=$('timeline'); tl.replaceChildren();
+  TL.forEach(([d,t,de,past,key])=>{const it=el('div','it'+(past?' past':'')+(key?' key':'')); it.append(el('div','dt',d),el('div','ti',t),el('div','de',de)); tl.appendChild(it);});
 }
-function showIosGuide(){g('ios-toast').classList.add('show');}
 
-// ─── 초기화
-loadSaved();
-refreshAll();
+/* ================= 렌더: 매도 ================= */
+function renderSell(){
+  $('in-trigger').value=S.trigger; $('trigLbl').textContent=eok(S.trigger);
+  const hs=getSer(ME);
+  lineChart($('chHouse'),MONTHS,[{name:'현재집 59㎡',color:'var(--acc)',values:hs.v,fill:hs.f}],{refs:[{y:S.trigger,color:'var(--warn)'},{y:49000,color:'var(--mut)'}],fmt:v=>(v/10000).toFixed(1)+'억',tipFmt:v=>eok(v),xfmt:m=>m.slice(0,4),tipLabel:m=>m.replace('-','.'),aria:'현재집 59㎡ 월별 실거래 시세(6개월 이동 중앙값)'});
+  const tb=$('houseLast'); tb.replaceChildren();
+  CX[ME].last.slice().reverse().forEach(([d,p,f])=>{const tr=el('tr'); tr.append(el('td',null,d),el('td',null,f+'층'),el('td',null,eok(p))); tb.appendChild(tr);});
+  $('houseNote').textContent=`최근 6개월 중앙값 ${eok(CX[ME].recent[0])} (${CX[ME].recent[1]}건), 최근 3개월 ${eok(CX[ME].r3[0])} (${CX[ME].r3[1]}건) · 실거래 ~${DATA.asof_trades}. 시세 ${eok(CX[ME].est)}${CX[ME].estSrc==='idx'?' (3개월 거래가 적어 지수 보정)':''}. 2021~22 최고 ${eok(CX[ME].peak21)}.`;
+  const tc=$('trigCheck'); tc.replaceChildren();
+  const est=houseEst(), gap=S.trigger-est;
+  const r1=el('div','row'); r1.append(el('span','k','현재 시세 (중앙값)'),el('span','v',eok(est))); tc.appendChild(r1);
+  const LT=CX[ME].last[CX[ME].last.length-1]; const r0=el('div','row'); r0.append(el('span','k','가장 최근 거래'),el('span','v '+(LT[1]>=S.trigger?'ok':''),LT[0].slice(2).replace(/-/g,'.')+' · '+eok(LT[1])+(LT[1]>=S.trigger?' ✅':''))); tc.appendChild(r0);
+  const r2=el('div','row'); r2.append(el('span','k','트리거까지'),el('span','v '+(gap<=0?'ok':'warn'),gap<=0?'도달 ✅':'+'+won(gap)+' ('+pct(gap/est*100)+')')); tc.appendChild(r2);
+  const nmW=DATA.weekly.series['남양주'], wAvg=nmW.slice(-8).reduce((a,b)=>a+b,0)/8;
+  const weeks=gap>0&&wAvg>0?Math.ceil(Math.log(S.trigger/est)/Math.log(1+wAvg/100)):null;
+  const r3=el('div','row'); r3.append(el('span','k','최근 8주 남양주 속도 유지 시'),el('span','v',gap<=0?'—':weeks?`약 ${weeks}주 후`:'도달 어려움')); tc.appendChild(r3);
+  tc.appendChild(el('div','note',`남양주 최근 8주 평균 주간 상승률 ${pct(wAvg,2)} 단순 외삽. 시장 속도가 바뀌면 크게 달라집니다.`));
+  // weekly table
+  const W=DATA.weekly, keys=['강남','송파','성동','강동','경기','분당','과천','구리','하남','남양주'];
+  const t=$('wkTable'); t.replaceChildren(); const th=el('tr'); th.appendChild(el('th',null,'주'));
+  keys.forEach(k=>th.appendChild(el('th',null,k))); const thead=el('thead'); thead.appendChild(th); t.appendChild(thead);
+  const tbody=el('tbody'); for(let i=W.dates.length-1;i>=W.dates.length-8;i--){ const tr=el('tr'); tr.appendChild(el('td',null,W.dates[i].slice(5)));
+    keys.forEach(k=>{const v=W.series[k][i]; tr.appendChild(el('td',v<0?'dn':v>0?'up':'',v==null?'—':v.toFixed(2)));}); tbody.appendChild(tr);} t.appendChild(tbody);
+  // supply
+  const sp=DATA.supply, cols={'동남권':'var(--up)','경기':'var(--acc)','동부1권':'var(--ok)','경부1권':'var(--warn)'};
+  lineChart($('chSupply'),sp.dates,Object.keys(cols).map(k=>({name:k,color:cols[k],values:sp.series[k]})),{refs:[{y:100,color:'var(--mut)'}],xfmt:d=>d.slice(5),h:180,aria:'매매수급지수 최근 12주'});
+  const lg=$('lgSupply'); lg.replaceChildren(); Object.entries(cols).forEach(([k,c])=>{const s=el('span'); const i=el('i'); i.style.background=c; s.append(i,document.createTextNode(k)); lg.appendChild(s);});
+  renderIdx();
+}
+const IDX_SETS={'경기권':['서울','경기','남양주','구리','하남'],'남부':['송파','분당','수지','안양동안','남양주'],'핵심':['서울','송파','경기','남양주']};
+function renderIdx(){
+  const seg=$('segIdx'); if(!seg.children.length) Object.keys(IDX_SETS).forEach(k=>{const b=el('button',null,k); b.dataset.k=k; b.onclick=()=>{S.idxSet=k;save();renderIdx();}; seg.appendChild(b);});
+  [...seg.children].forEach(b=>b.classList.toggle('on',b.dataset.k===S.idxSet));
+  const mi=DATA.monthlyIndex, palette=['var(--acc)','var(--warn)','var(--up)','var(--ok)','var(--purple)'];
+  const ser=IDX_SETS[S.idxSet].map((k,i)=>({name:k,color:k==='남양주'?'var(--up)':palette[i%5],values:mi.series[k],w:k==='남양주'?3:2}));
+  lineChart($('chIdx'),mi.months,ser,{refs:[{y:100,color:'var(--ref)'}],xfmt:m=>m.slice(0,4),fmt:v=>v.toFixed(0),tipFmt:v=>v.toFixed(1),h:220,aria:'매매지수 추이'});
+  const lg=$('lgIdx'); lg.replaceChildren(); ser.forEach(s=>{const sp=el('span'); const i=el('i'); i.style.background=s.color; sp.append(i,document.createTextNode(s.name)); lg.appendChild(sp);});
+}
+
+/* ================= 렌더: 갭 ================= */
+const PAL=['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)'];
+const DEF_PICK={'59':['다산e편한세상자이|59','래미안하이어스|59','구리인창주공1|59','하남신장에코타운1단지|59'],'84':['다산롯데캐슬|84','래미안하이어스|84','구리인창e편한세상|84','하남신장에코타운1단지|84']};
+const gapKeys=()=>Object.keys(CX).filter(k=>CX[k].pt===S.pt&&k!==ME&&!k.startsWith('덕소대성'));
+function picks(){ const keys=gapKeys(); let p=(S.gapPick[S.pt]||DEF_PICK[S.pt]||[]).filter(k=>keys.includes(k)&&CX[k].m&&CX[k].m.some(v=>v!=null));
+  if(!p.length) p=keys.filter(k=>CX[k].m&&CX[k].m.some(v=>v!=null)).slice(0,3); return p; }
+function togglePick(k){ const p=picks().slice(); const i=p.indexOf(k);
+  if(i>=0){ if(p.length===1){toast('최소 1개는 남겨둡니다'); return;} p.splice(i,1); }
+  else { if(!(CX[k].m&&CX[k].m.some(v=>v!=null))){toast('아직 실거래 데이터가 없는 단지입니다'); return;} if(p.length>=6){toast('최대 6개까지 비교할 수 있어요'); return;} p.push(k); }
+  S.gapPick[S.pt]=p; save(); renderGap(); }
+function segOn(id,v){ [...$(id).children].forEach(b=>b.classList.toggle('on',(b.dataset.v||b.dataset.pt)===v)); }
+function renderGap(){
+  $('gapAsof').textContent=DATA.asof_trades.replace(/-/g,'.');
+  segOn('segPt',S.pt); segOn('segMode',S.gapMode); segOn('segPeriod',S.gapPeriod); $('in-dots').checked=!!S.dots;
+  const keys=gapKeys(), P=picks();
+  const color=k=>PAL[P.indexOf(k)%PAL.length];
+  // chips
+  const C=$('gapChips'); C.replaceChildren();
+  keys.slice().sort((a,b)=>(P.includes(b)-P.includes(a))||CX[a].name.localeCompare(CX[b].name,'ko')).forEach(k=>{ const b=el('button','chip'+(P.includes(k)?' on':'')); const i=el('i'); if(P.includes(k)) i.style.background=color(k);
+    b.append(i,document.createTextNode(CX[k].name)); b.onclick=()=>togglePick(k); C.appendChild(b); });
+  // chart
+  const start=S.gapPeriod==='2015'?0:S.gapPeriod==='2019'?Math.max(0,mIdx('2019-01')):Math.max(0,MONTHS.length-36);
+  const labels=MONTHS.slice(start); const cut=a=>a.slice(start);
+  let ser;
+  if(S.gapMode==='gap'){
+    ser=P.map(k=>{const g=gapSer(k); return {name:CX[k].name,color:color(k),values:cut(g.v),fill:cut(g.f)};});
+  } else {
+    const me=getSer(ME);
+    ser=[{name:'현재집 59㎡',color:'var(--fg2)',values:cut(me.v),fill:cut(me.f),w:3,dash:true}].concat(P.map(k=>{const g=getSer(k); return {name:CX[k].name,color:color(k),values:cut(g.v),fill:cut(g.f)};}));
+  }
+  const pts=[];
+  if(S.dots&&PTS){ const meS=getSer(ME).v;
+    const add=(k,col,op,r)=>{ const a=PTS.pts[k]; if(!a) return; const xy=[];
+      a.forEach(([dd,p])=>{ const xi=ptX(dd); const mi=Math.floor(xi); if(mi<start) return; let v=p;
+        if(S.gapMode==='gap'){ const b=meS[mi]; if(b==null) return; v=p-b; } xy.push([xi-start,v]); });
+      pts.push({color:col,xy,op,r}); };
+    if(S.gapMode==='price') add(ME,'var(--fg2)',.3,2);
+    P.forEach(k=>add(k,color(k),.4,2.2)); }
+  else if(S.dots&&!PTS) loadPts();
+  lineChart($('chGap'),labels,ser,{h:280,points:pts,fmt:v=>(v/10000).toFixed(1)+'억',tipFmt:v=>eok(v),xfmt:m=>S.gapPeriod==='3y'?m.slice(2).replace('-','.'):m.slice(0,4),tipLabel:m=>m.replace('-','.')+(S.gapMode==='gap'?' · 현재집 대비':''),
+    refs:S.gapMode==='gap'?[]:[],aria:(S.gapMode==='gap'?'현재집 대비 가격차':'실거래 시세')+' 추이: '+P.map(k=>CX[k].name).join(', ')});
+  const L=$('lgGap'); L.replaceChildren(); ser.forEach(s0=>{const sp=el('span'); const i=el('i'); i.style.background=s0.color; sp.append(i,document.createTextNode(s0.name)); L.appendChild(sp);});
+  $('gapNote').textContent=(S.gapMode==='gap'?'선 = 월별 시세 차이(6개월 이동 중앙값). 점 = 각 실거래가에서 그 달 현재집 시세를 뺀 값. 아래로 내려갈수록 갈아타기 유리. ':'선 = 월별 시세(6개월 이동 중앙값), 점 = 개별 실거래. 굵은 점선이 현재집. ')+'옅은 점선 구간은 거래가 드물어 앞뒤 시세를 이은 부분입니다.'+(S.dots&&!PTS?' (개별 거래 불러오는 중…)':'');
+  // 연도별 비교
+  const yrs=[...new Set(MONTHS.map(m=>m.slice(0,4)))];
+  const ya=P.map(k=>yearAvg(S.gapMode==='gap'?gapSer(k).v:getSer(k).v)); const yme=yearAvg(getSer(ME).v);
+  $('yrTitle').textContent=S.gapMode==='gap'?'연도별 평균 갭 (목표 − 현재집)':'연도별 평균 시세';
+  $('yrSub').textContent=(S.gapMode==='gap'?'각 해 월별 갭의 평균. 전년보다 줄면 초록, 늘면 빨강.':'각 해 월별 시세의 평균. 현재집과 나란히 비교.')+' '+DATA.asof_trades.slice(0,4)+'년은 '+DATA.asof_trades.slice(5,7)+'월까지.';
+  const YT=$('yrTable'); YT.replaceChildren(); const yh=el('tr'); yh.appendChild(el('th',null,'연도'));
+  if(S.gapMode==='price') yh.appendChild(el('th',null,'현재집'));
+  P.forEach(k=>{const h=el('th'); const sw=el('span','sw'); sw.style.background=color(k); sw.style.borderColor=color(k); h.append(sw,document.createTextNode(CX[k].name)); yh.appendChild(h);});
+  const yth=el('thead'); yth.appendChild(yh); YT.appendChild(yth); const ytb=el('tbody');
+  yrs.slice().reverse().forEach(y=>{ const tr=el('tr'); tr.appendChild(el('td',null,y)); if(S.gapMode==='price') tr.appendChild(el('td',null,yme[y]!=null?eok(yme[y]):'—'));
+    P.forEach((k,j)=>{ const v=ya[j][y], pv=ya[j][String(+y-1)]; let cls=''; if(S.gapMode==='gap'&&v!=null&&pv!=null) cls=v<pv?'ok':v>pv?'bad':''; tr.appendChild(el('td',cls,v!=null?eok(v):'—')); });
+    if([...tr.children].slice(1).some(td=>td.textContent!=='—')) ytb.appendChild(tr); });
+  YT.appendChild(ytb);
+  const LK=$('gapLinks'); LK.replaceChildren(); P.forEach(k=>{const nm=CX[k].name; const a=el('a',null,nm+' ↗'); a.href=LINKS.naver(nm); a.target='_blank'; a.rel='noopener'; LK.appendChild(a);});
+  // table
+  const COLS=[['name','단지'],['g21','21년 갭'],['g23','23년 갭'],['gNow','현재 갭'],['chg','21→현재'],['chg23','23→현재'],['est','최근 시세'],['gMin','최저 갭(19~)'],['loan','필요 대출·DSR']];
+  const rows=keys.map(k=>{const gi=gapInfo(k), c=CX[k]; const need=c.est!=null?calcLoanFor(c.est):null; return {k,name:c.name,est:c.est,...gi,loan:need?need.loan:null,dsr:need?need.dsr:null};});
+  const {k:sk,d:sd}=S.gapSort;
+  rows.sort((a,b)=>{ if(sk==='name') return a.name.localeCompare(b.name,'ko')*sd; const x=a[sk],y=b[sk]; if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return (x-y)*sd; });
+  const T=$('gapTable2'); T.replaceChildren(); const th=el('thead'), hr=el('tr');
+  COLS.forEach(([k,t])=>{ const h=el('th','sort'+(k===sk?' on':''),t+(k===sk?(sd>0?' ▲':' ▼'):'')); h.onclick=()=>{ S.gapSort=sk===k?{k,d:-sd}:{k,d:1}; save(); renderGap(); }; hr.appendChild(h); });
+  th.appendChild(hr); T.appendChild(th);
+  $('gapSortLbl').textContent=COLS.find(c=>c[0]===sk)[1]+(sd>0?' 오름차순':' 내림차순');
+  const tb=el('tbody');
+  rows.forEach(r=>{ const tr=el('tr'); if(P.includes(r.k)) tr.className='me';
+    const td0=el('td'); const sw=el('span','sw'); if(P.includes(r.k)){sw.style.background=color(r.k); sw.style.borderColor=color(r.k);} td0.append(sw,document.createTextNode(r.name)); tr.appendChild(td0);
+    const c=CX[r.k];
+    tr.append(el('td',null,eok(r.g21)), el('td',null,eok(r.g23)), el('td',null,r.gNow==null&&c.note?'신축·거래 없음':eok(r.gNow)),
+      el('td',r.chg==null?'':r.chg<0?'ok':'bad',r.chg==null?'—':(r.chg>0?'+':'')+eok(r.chg)),
+      el('td',r.chg23==null?'':r.chg23<0?'ok':'bad',r.chg23==null?'—':(r.chg23>0?'+':'')+eok(r.chg23)),
+      el('td',null,c.est==null?'—':eok(c.est)+(c.estSrc==='idx'?'＊':'')),
+      el('td',null,r.gMin==null?'—':eok(r.gMin)+' ('+r.mMin.slice(2).replace('-','.')+')'),
+      el('td',r.dsr==null?'':r.dsr>40?'bad':r.dsr>30?'warn':'',r.loan==null?'—':r.loan>0?eok(r.loan)+' · '+r.dsr.toFixed(0)+'%':'불필요'));
+    tr.onclick=()=>togglePick(r.k); tb.appendChild(tr); });
+  T.appendChild(tb);
+}
+
+/* ================= 계산: 자금 ================= */
+function acqCost(price,big){ // 만원
+  const e=price/10000; let rate=e<=6?1:e<=9?(e*2/3-3):3;
+  const tax=price*rate/100, edu=tax*0.1, nong=big?price*0.002:0;
+  const fee=brokerFee(price);
+  return {rate,tax,edu,nong,fee,etc:150,total:tax+edu+nong+fee+150};
+}
+function brokerFee(p){ // 매매 상한요율
+  const r=p<5000?[.006,25]:p<20000?[.005,80]:p<90000?[.004,null]:p<120000?[.005,null]:p<150000?[.006,null]:[.007,null];
+  let f=p*r[0]; if(r[1]!=null) f=Math.min(f,r[1]); return f;
+}
+function savingsMonths(){ const now=new Date(); const t={2026:new Date('2026-12-31'),2027:new Date('2027-12-31'),2028:new Date('2028-02-28')}[S.when]; return Math.max(0,Math.round((t-now)/2629800000)); }
+function calcMoney(buy=S.buy,allIn=false){
+  const sellFee=brokerFee(S.sell);
+  const net=S.sell-S.debt-sellFee;
+  const months=savingsMonths(), saved=S.save*months;
+  const opt=S.useOpt?Math.round(S.pension*0.6)+S.retire:0;
+  const equity=net+S.cash+saved+opt;
+  const ac=allIn?{rate:0,tax:0,edu:0,nong:0,fee:0,etc:0,total:0}:acqCost(buy,S.big);
+  const need=buy+ac.total-equity;
+  const ltv=(S.zone==='reg'?0.4:0.7)*buy; let lim=ltv; if(S.cap) lim=Math.min(lim,60000);
+  const loan=Math.max(0,need);
+  const mp=pmt(loan,S.rate,S.term), mps=pmt(loan,S.rate+S.stress,S.term);
+  const dsr=S.income>0?(mp*12+S.other)/S.income*100:0, sdsr=S.income>0?(mps*12+S.other)/S.income*100:0;
+  return {sellFee,net,months,saved,opt,equity,ac,need,loan,lim,mp,mps,dsr,sdsr,shortage:Math.max(0,loan-lim)};
+}
+function calcLoanFor(price){ const c=calcMoney(price); return {loan:c.loan,dsr:c.dsr}; }
+function renderMoney(){
+  ['cash','pension','retire','save','sell','debt','buy','rate','stress','term','income','other'].forEach(k=>{const i=$('in-'+k); if(document.activeElement!==i) i.value=S[k];});
+  $('in-useOpt').checked=S.useOpt; $('in-big').checked=S.big; $('in-cap').checked=S.cap; $('in-zone').value=S.zone; $('in-when').value=S.when; $('in-sheetUrl').value=S.sheetUrl;
+  [...$('segSrc').children].forEach(b=>b.classList.toggle('on',b.dataset.src===S.src)); $('srcSheet').hidden=S.src!=='sheet';
+  $('cashNote').textContent=S.src==='sheet'?(S.cashAsof?`시트 기준일 ${S.cashAsof} 값. 직접 고치면 다음 불러오기 전까지 유지됩니다.`:''):'포트폴리오 시트의 ‘즉시가용’ 값 기준 (11/13: 5,626만).';
+  const c=calcMoney(), O=$('moneyOut'); O.replaceChildren();
+  const rows=[['매도 순현금',`${won(S.sell)} − ${won(S.debt)} − 중개비 ${won(c.sellFee)}`,c.net],['즉시가용 자산','',S.cash],[`매도 시점까지 저축 (${c.months}개월)`,'',c.saved],['연금담보·퇴직금','',c.opt],['자기자금 합계','',c.equity,'tot'],
+    ['목표 매수가','',S.buy],[`취득세·교육세 (${c.ac.rate.toFixed(2)}%)${S.big?' + 농특세':''}`,'',c.ac.tax+c.ac.edu+c.ac.nong],['중개비·등기 등','',c.ac.fee+c.ac.etc],['필요 대출','',c.loan,'tot']];
+  rows.forEach(([k,s,v,cls])=>{const r=el('div','row'+(cls?' '+cls:'')); const kk=el('span','k',k); if(s){kk.appendChild(el('div','mut',s)); kk.lastChild.style.fontSize='11px';} r.append(kk,el('span','v',won(v))); O.appendChild(r);});
+  [['월 상환 (원리금균등)',Math.round(c.mp).toLocaleString()+'만'],['월 상환 후 저축 여력',(S.save-Math.round(c.mp)>=0?'+':'')+(S.save-Math.round(c.mp))+'만'],['DSR',c.dsr.toFixed(1)+'%'],[`스트레스 DSR (+${S.stress}%p)`,c.sdsr.toFixed(1)+'%'],['대출 한도 (LTV'+(S.cap?'·6억':'')+')',won(c.lim)]]
+   .forEach(([k,v],i)=>{const r=el('div','row'); let cls=''; if(i===2||i===3) cls=(i===2?c.dsr:c.sdsr)>40?' bad':(i===2?c.dsr:c.sdsr)>30?' warn':' ok'; if(i===1) cls=S.save-c.mp<0?' bad':' ok'; r.append(el('span','k',k),el('span','v'+cls,v)); O.appendChild(r);});
+  const Wn=$('moneyWarn'); Wn.replaceChildren();
+  if(c.shortage>0) Wn.appendChild(el('div','warnbox',`대출 한도보다 ${won(c.shortage)} 부족합니다. 매도가를 높이거나 목표가를 낮추거나, 자기자금을 늘려야 합니다.`));
+  if(c.sdsr>40) Wn.appendChild(el('div','warnbox','스트레스 DSR이 40%를 넘어 은행 한도가 줄 수 있습니다.'));
+  if(S.income===10476) Wn.appendChild(el('div','warnbox','연소득 기본값(월 873만×12)은 세후일 수 있습니다. 세전 소득으로 바꾸면 DSR이 더 정확해집니다.'));
+  if(!c.shortage&&c.sdsr<=40) Wn.appendChild(el('div','okbox','한도·DSR 기준으로는 실행 가능한 범위입니다.'));
+  // 시나리오표
+  const sells=[40000,42500,45000,50000], buys=[65000,80000,87000,95000];
+  const t=$('scTable'); t.replaceChildren(); const h=el('tr'); h.appendChild(el('th',null,'매도↓ / 매수→')); buys.forEach(b=>h.appendChild(el('th',null,eok(b)))); const th=el('thead'); th.appendChild(h); t.appendChild(th);
+  const tb=el('tbody'); const keep=S.sell;
+  sells.forEach(sv=>{S.sell=sv; const tr=el('tr'); tr.appendChild(el('td',null,eok(sv))); buys.forEach(b=>{const x=calcMoney(b); const td=el('td',x.sdsr>40||x.shortage>0?'bad':x.sdsr>30?'warn':'ok'); td.textContent=x.loan>0?eok(x.loan)+' · '+x.dsr.toFixed(0)+'%':'불필요'; tr.appendChild(td);}); tb.appendChild(tr);});
+  S.sell=keep; t.appendChild(tb);
+}
+async function syncSheet(){
+  const url=($('in-sheetUrl').value||'').trim(); S.sheetUrl=url; save();
+  if(!/^https:\/\/docs\.google\.com\//.test(url)){ $('syncMsg').textContent='docs.google.com 주소를 넣어주세요'; return; }
+  $('syncMsg').textContent='불러오는 중…';
+  try{
+    const res=await fetch(url,{cache:'no-store'}); if(!res.ok) throw new Error('HTTP '+res.status);
+    const txt=await res.text(); const rows=parseCSV(txt);
+    const hdr=rows.find(r=>/기준일/.test(r[0]||'')), row=rows.find(r=>(r[0]||'').replace(/\s/g,'')==='즉시가용');
+    if(!hdr||!row) throw new Error('‘기준일’/‘즉시가용’ 행을 찾지 못함');
+    let best=-1,bd=''; hdr.forEach((v,i)=>{ if(i&&/\d{4}-\d{2}-\d{2}/.test(v)&&v>bd&&row[i]){bd=v;best=i;} });
+    if(best<0) throw new Error('날짜 열을 찾지 못함');
+    const won_=parseInt(String(row[best]).replace(/[^\d-]/g,''),10); if(isNaN(won_)) throw new Error('숫자 변환 실패');
+    S.cash=Math.round(won_/10000); S.cashAsof=bd; S.src='sheet'; save(); renderAll();
+    $('syncMsg').textContent=`✅ ${bd} 즉시가용 ${won(S.cash)}`;
+  }catch(e){ $('syncMsg').textContent='실패: '+e.message+' (오프라인이거나 게시 안 된 주소일 수 있음)'; }
+}
+function parseCSV(t){const out=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}else if(c==='"')q=true;else if(c===','){row.push(f);f='';}else if(c==='\n'){row.push(f);out.push(row);row=[];f='';}else if(c!=='\r')f+=c;}if(f||row.length){row.push(f);out.push(row);}return out;}
+
+/* ================= 렌더: 플랜 ================= */
+const PLANS=[
+  {id:'p1',name:'① 타지역 갈아타기',color:'var(--acc)',cost:()=>S.buy,costTxt:()=>'목표 매수가 '+eok(S.buy),move:'2027~28',fit:'최종 목적지 후보',meta:'구리·다산·미사·구성남·인덕원·수지 · 갭이 좁혀질 때 이동',pros:'최종 정착지 학군·직주근접 최적화',cons:'2021년 대비 대부분 갭 확대 · 매수 타이밍 의존'},
+  {id:'p2',name:'② 라온 59㎡ 분양권',color:'var(--ok)',allIn:true,cost:()=>64000,costTxt:()=>'올인 약 6.3~6.5억 (후불이자 포함)',move:'2028.03',fit:'징검다리 최적',meta:'덕소 생활권 유지 · 59 매물 대기 중',pros:'대출 부담 낮음 · 환금성 · 일정 부합',cons:'59㎡ 매물 희소 · 999세대 동시 입주'},
+  {id:'p3',name:'③ 라온 84C 203동 602호',color:'var(--warn)',allIn:true,cost:()=>87235,costTxt:()=>'총취득 약 8.72억 (분양가 8.0억, 후불이자 3,050만)',move:'2028.03',fit:'사실상 최종 정착',meta:'후순위 · 계약금 5%(약 5천만)만 입주 때까지',pros:'저학년까지 덕소 거주 · 신축 84 · 6호선·재개발 업사이드',cons:'대출 5억대 · 다음 이동 유연성 감소'},
+  {id:'p4',name:'④ 덕소5B 두산 재개발',color:'var(--purple)',allIn:true,cost:()=>67430,costTxt:()=>'분담 6.74억 + 추가분담금(미정)',move:'2032',fit:'일정 불일치',meta:'입주 2032 · 추가분담 리스크',pros:'신축 대단지 기대',cons:'2028.11 전입 마감 불충족 · 비용 상한 없음'},
+  {id:'p5',name:'⑤ 매도 후 재개발 투자 + 라온 월세',color:'var(--up)',allIn:true,cost:()=>30000,costTxt:()=>'재개발 투자 약 3억 (상대원3 / 수택2)',move:'2028.03 (월세)',fit:'투자형',meta:'현재집 2년 내 매도 → 재개발 매수 → 라온 월세 거주',pros:'무주택 기간 활용 · 재개발 시세차익',cons:'월세 지출 · 사업 지연·분담금 리스크 · 거주 안정성 낮음'}
+];
+function renderPlans(){
+  const V=$('v-plans'); V.replaceChildren();
+  PLANS.forEach(p=>{
+    const c=calcMoney(p.cost(),!!p.allIn), card=el('div','card plan'); card.style.borderLeftColor=p.color;
+    card.append(el('h4',null,p.name),el('div','meta',p.meta));
+    const ok=p.move!=='2032';
+    [['비용',p.costTxt()],['입주/이동',p.move],['2028.11 마감',ok?'✅ 충족':'❌ 불충족'],['필요 대출',p.id==='p5'?(c.loan>0?won(c.loan):'불필요 (자기자금 내)'):(c.loan>0?won(c.loan):'불필요')],['월 상환 · DSR',c.loan>0?Math.round(c.mp)+'만 · '+c.dsr.toFixed(0)+'%':'—'],['전략 성격',p.fit]]
+     .forEach(([k,v])=>{const r=el('div','row'); r.append(el('span','k',k),el('span','v',v)); card.appendChild(r);});
+    const n=el('div','note'); n.textContent='👍 '+p.pros+'  ·  ⚠ '+p.cons; card.appendChild(n);
+    if(p.id==='p4') card.appendChild(el('div','note','추가분담금이 정해지지 않아 필요 대출은 하한값입니다.'));
+    if(p.id==='p5') card.appendChild(el('div','note','월세(예: 1억/200만) 지출은 대출 계산에 포함되지 않았습니다.'));
+    V.appendChild(card);
+  });
+  V.appendChild(el('div','note','필요 대출·DSR은 ‘자금’ 탭의 현재 입력값(매도가, 즉시가용, 금리, 소득 등)으로 계산됩니다. ①은 취득세·중개비를 더해 계산하고, ②~⑤는 비용이 이미 올인 금액이라 더하지 않습니다.'));
+}
+function renderTax(){
+  ['acqDate','saleDate','newDate','doneDate','live'].forEach(k=>{const i=$('in-'+k); if(document.activeElement!==i) i.value=S[k];});
+  $('in-adj').checked=S.adj; $('in-isRight').checked=S.isRight;
+  const a=new Date(S.acqDate), s=new Date(S.saleDate), hold=(s-a)/31557600000;
+  const O=$('cgtOut'); O.replaceChildren();
+  const checks=[['보유 2년 이상',hold>=2,hold.toFixed(1)+'년'],['거주 2년 이상 (조정지역 취득 시)',!S.adj||S.live>=2,S.adj?S.live+'년':'해당 없음'],['양도가 12억 이하',S.sell<=120000,eok(S.sell)]];
+  checks.forEach(([k,ok,v])=>{const r=el('div','row'); r.append(el('span','k',k),el('span','v '+(ok?'ok':'bad'),(ok?'✅ ':'❌ ')+v)); O.appendChild(r);});
+  const all=checks.every(c=>c[1]);
+  const gain=S.sell-49000-3000-1150;
+  O.appendChild(el('div',all||gain<=0?'okbox':'warnbox',gain<=0?`취득원가(매수가+인테리어+취득비용 약 ${won(53150)})보다 낮게 팔면 양도차손 ${won(-gain)} → 양도세 없음.`:all?`1세대1주택 비과세 요건 충족 → 양도세 0원 (양도차익 약 ${won(gain)}).`:'비과세 요건 미충족 — 세무사 상담 필요.'));
+  O.appendChild(el('div','note','기준: 1세대가 다른 주택(분양권 포함)을 가지지 않은 상태로 양도할 때. 새 집·분양권을 먼저 사면 아래 일시적 2주택 요건을 함께 충족해야 합니다.'));
+  const T=$('tmpOut'); T.replaceChildren();
+  const nd=new Date(S.newDate), dd=new Date(S.doneDate);
+  const gap1=(nd-a)/31557600000;
+  const lim1=new Date(nd); lim1.setFullYear(lim1.getFullYear()+3);
+  const lim2=new Date(dd); lim2.setFullYear(lim2.getFullYear()+3);
+  const r=[['종전주택 취득 후 1년 지나 새 주택 취득',gap1>=1,gap1.toFixed(1)+'년'],
+    ['새 주택(분양권) 취득 후 3년 내 종전주택 양도',s<=lim1,'기한 '+lim1.toISOString().slice(0,10)]];
+  if(S.isRight) r.push(['(분양권 특례) 완공 후 3년 내 양도 + 전입 1년 거주',s<=lim2,'기한 '+lim2.toISOString().slice(0,10)]);
+  r.forEach(([k,ok,v])=>{const x=el('div','row'); x.append(el('span','k',k),el('span','v '+(ok?'ok':'warn'),(ok?'✅ ':'⚠ ')+v)); T.appendChild(x);});
+  const pass=r[0][1]&&(r[1][1]||(S.isRight&&r[2][1]));
+  T.appendChild(el('div',pass?'okbox':'warnbox',pass?'양도 예정일 기준으로 일시적 2주택 비과세 요건 안에 있습니다.':'양도 예정일이 특례 기한을 넘습니다. 일정 조정이 필요합니다.'));
+  const c=acqCost(S.buy,S.big), A=$('acqOut'); A.replaceChildren();
+  [['목표 매수가',won(S.buy)],[`취득세 (${c.rate.toFixed(2)}%)`,won(c.tax)],['지방교육세',won(c.edu)],['농어촌특별세',S.big?won(c.nong):'면제 (85㎡ 이하)'],['중개보수 (상한)',won(c.fee)],['법무·인지·채권 등',won(c.etc)],['합계',won(c.total)]]
+   .forEach(([k,v],i,arr)=>{const x=el('div','row'+(i===arr.length-1?' tot':'')); x.append(el('span','k',k),el('span','v',v)); A.appendChild(x);});
+  A.appendChild(el('div','note','1주택(또는 일시적 2주택으로 1주택 세율 적용) 기준. 6억 이하 1%, 6~9억 구간 누진, 9억 초과 3%. 분양권은 입주(잔금) 시점에 취득세가 나옵니다.'));
+}
+const BASE_TODOS=[
+  {id:'t1',t:'NH 지점 가조회',d:'중도금 대출 승계 가능 여부·후불이자 확정 (최우선)'},
+  {id:'t2',t:'라온 59㎡ 분양권 매물 모니터링',d:'플랜② · 나오면 즉시 검토'},
+  {id:'t3',t:'세무사 상담: 분양권 + 종전주택 일시적 2주택',d:'양도 기한·전입 요건 확인'},
+  {id:'t4',t:'2027 매도 게이트 점검',d:'호가·실거래가 트리거 이상인지'},
+  {id:'t5',t:'상대원3구역·수택2구역 사업 단계·추가분담금 확인',d:'플랜⑤'},
+  {id:'t6',t:'월요일 경기 하락신호 리포트 확인',d:'Claude 주간 점검'},
+  {id:'t7',t:'아내와 플랜 공유·합의',d:'이 앱 링크 공유'},
+  {id:'t8',t:'고정금리 만료(2029) 대비 대환 계획',d:'현재 3.469%'},
+  {id:'t9',t:'6호선 연장 진행 상황 체크',d:'업사이드 옵션으로만 반영'}
+];
+const allTodos=()=>BASE_TODOS.concat(S.todos);
+function todoRow(t){
+  const r=el('label','chk'+(S.checks[t.id]?' done':'')); const c=el('input'); c.type='checkbox'; c.checked=!!S.checks[t.id];
+  c.onchange=()=>{S.checks[t.id]=c.checked; save(); renderAll();};
+  const b=el('div'); b.append(el('div','ct',t.t)); if(t.d) b.appendChild(el('div','cd',t.d)); r.append(c,b); return r;
+}
+function renderCheck(){ const L=$('checkList'); L.replaceChildren(); allTodos().forEach(t=>L.appendChild(todoRow(t))); }
+
+/* ================= 이벤트 ================= */
+function renderAll(){ renderHome(); renderSell(); renderGap(); renderMoney(); renderPlans(); renderTax(); renderCheck();
+  const n=new Date(); $('hdrDate').textContent=`실거래 ~${DATA.asof_trades} · 부동산원 ${DATA.asof_reb}`+(DATA._live?'':' (내장)'); }
+/* 주간 자동 업데이트된 data/*.json 불러오기 (실패하면 내장 스냅샷 사용) */
+async function loadData(){
+  try{
+    const [t,r]=await Promise.all([fetch('data/trades_agg.json',{cache:'no-cache'}),fetch('data/reb.json',{cache:'no-cache'})]);
+    let ok=false;
+    if(t.ok){const j=await t.json(); if(j.complexes&&j.complexes[ME]&&j.months&&j.complexes[ME].m){DATA.complexes=j.complexes; DATA.months=j.months; DATA.asof_trades=j.asof_trades; ok=true;}}
+    if(r.ok){const j=await r.json(); ['weekly','monthlyIndex','supply','asof_reb'].forEach(k=>{if(j[k]) DATA[k]=j[k];}); ok=true;}
+    if(ok){DATA._live=true; CX=DATA.complexes; MONTHS=DATA.months; SERC={}; renderAll();}
+  }catch(e){}
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',ev=>{ev.preventDefault(); go(b.dataset.go);}));
+function go(id){ document.querySelectorAll('section.page').forEach(p=>p.classList.toggle('on',p.id===id));
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===id)); window.scrollTo(0,0);
+  if(id==='p-sell') renderSell(); if(id==='p-gap'){ renderGap(); loadPts(); } }
+const numF=['cash','pension','retire','save','sell','debt','buy','rate','stress','term','income','other','trigger','live'];
+numF.forEach(k=>{const i=$('in-'+k); i.addEventListener('input',()=>{const v=parseFloat(i.value); if(!isNaN(v)){S[k]=v; if(k==='cash') S.cashAsof='직접 수정'; save(); renderHome(); renderMoney(); renderPlans(); renderTax(); if(k==='trigger') renderSell();}});});
+['useOpt','big','cap','adj','isRight'].forEach(k=>$('in-'+k).addEventListener('change',e=>{S[k]=e.target.checked; save(); renderAll();}));
+['zone','when'].forEach(k=>$('in-'+k).addEventListener('change',e=>{S[k]=e.target.value; save(); renderAll();}));
+['acqDate','saleDate','newDate','doneDate'].forEach(k=>$('in-'+k).addEventListener('change',e=>{S[k]=e.target.value; save(); renderTax();}));
+[...$('segPt').children].forEach(b=>b.onclick=()=>{S.pt=b.dataset.pt; save(); renderGap();});
+[...$('segMode').children].forEach(b=>b.onclick=()=>{S.gapMode=b.dataset.v; save(); renderGap();});
+[...$('segPeriod').children].forEach(b=>b.onclick=()=>{S.gapPeriod=b.dataset.v; save(); renderGap();});
+$('in-dots').addEventListener('change',e=>{S.dots=e.target.checked; save(); renderGap();});
+[...$('segSrc').children].forEach(b=>b.onclick=()=>{S.src=b.dataset.src; save(); renderMoney(); renderHome();});
+[...$('segPlan').children].forEach(b=>b.onclick=()=>{[...$('segPlan').children].forEach(x=>x.classList.toggle('on',x===b)); ['plans','tax','check'].forEach(v=>$('v-'+v).hidden=v!==b.dataset.v);});
+$('btnSync').onclick=syncSheet;
+const THEME_LABEL={auto:'🌓 자동',light:'☀️ 라이트',dark:'🌙 다크'};
+const mqLight=matchMedia('(prefers-color-scheme: light)');
+function applyTheme(){ const t=S.theme||'auto'; const d=t==='auto'?(mqLight.matches?'light':'dark'):t;
+  document.documentElement.dataset.theme=d; $('themeBtn').textContent=THEME_LABEL[t];
+  const m=document.querySelector('meta[name=theme-color]'); if(m) m.content=d==='light'?'#F3F5F8':'#0E1620'; }
+$('themeBtn').onclick=()=>{ const order=['auto','light','dark']; S.theme=order[(order.indexOf(S.theme||'auto')+1)%3]; save(); applyTheme(); toast('화면 모드: '+THEME_LABEL[S.theme].slice(3)); };
+mqLight.addEventListener('change',()=>{ if((S.theme||'auto')==='auto') applyTheme(); });
+applyTheme();
+$('btnAddTodo').onclick=()=>{const v=$('in-newTodo').value.trim(); if(!v) return; S.todos.push({id:'u'+Date.now(),t:v}); $('in-newTodo').value=''; save(); renderAll();};
+$('shareBtn').onclick=async()=>{ const u=location.href.split('#')[0]; try{ if(navigator.share) await navigator.share({title:'갈아타기 전략 노트',url:u}); else {await navigator.clipboard.writeText(u); toast('링크를 복사했습니다');} }catch(e){} };
+let rT; window.addEventListener('resize',()=>{clearTimeout(rT); rT=setTimeout(()=>{renderSell(); renderGap();},200);});
+renderAll();
+loadData();
+if(S.src==='sheet'&&S.sheetUrl&&navigator.onLine) syncSheet();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>

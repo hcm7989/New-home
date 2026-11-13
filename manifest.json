@@ -1,12 +1,13 @@
 {
   "name": "갈아타기 전략 노트",
   "short_name": "갈아타기",
-  "description": "부동산 갈아타기 전략 · 시나리오 · 대출 계산기",
+  "description": "덕소 → 상급지 갈아타기: 매도 신호 · 갭 추적 · 자금/DSR · 플랜·세금",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0F1923",
-  "theme_color": "#0F1923",
+  "background_color": "#0E1620",
+  "theme_color": "#0E1620",
   "lang": "ko",
   "icons": [
     {
