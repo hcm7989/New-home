@@ -33,3 +33,8 @@ pip install pandas requests openpyxl
 MOLIT_KEY=인증키 python scripts/update_trades.py
 python scripts/update_reb.py "주간아파트가격동향조사 시계열.xlsx"   # 받아둔 엑셀로 변환
 ```
+
+## 직주근접 (data/commute.json)
+- 25개 단지 → 나의 회사(자곡로 174-14 / 남부순환로 2806) · 와이프 회사(백제고분로 101) · 장모님댁(송이로8길 7-3)
+- 카카오맵 길찾기로 2026-11-13 조회: 대중교통(가장 빠른 경로·환승·요금·추천 경로), 자동차(월 오전 8시 출발 예상 / 한산할 때, 거리·통행료)
+- 주간 자동 업데이트 대상이 아닙니다(경로는 거의 안 바뀜). 앱의 카카오/네이버 링크로 실시간 확인.
