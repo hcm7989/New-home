@@ -1,0 +1,50 @@
+name: 주간 데이터 업데이트
+
+on:
+  schedule:
+    - cron: '17 22 * * 4'   # 매주 금요일 07:17 (KST) — 부동산원 목요일 발표 다음 날
+  workflow_dispatch:         # Actions 탭에서 'Run workflow' 로 수동 실행
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 패키지 설치
+        run: |
+          pip install pandas requests openpyxl playwright
+          python -m playwright install --with-deps chromium
+
+      - name: 한국부동산원 주간 동향 (매도신호·지수)
+        continue-on-error: true   # 실패해도 실거래 갱신은 계속
+        run: python scripts/update_reb.py
+
+      - name: 국토부 실거래가 (최근 3개월 재수집 + 신규 단지 백필)
+        env:
+          MOLIT_KEY: ${{ secrets.MOLIT_KEY }}
+        run: python scripts/update_trades.py
+
+      - name: 변경분 커밋
+        run: |
+          git config user.name  "data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "변경 없음"
+          else
+            git commit -m "data: 주간 업데이트 $(TZ=Asia/Seoul date +%Y-%m-%d)"
+            git push
+          fi
