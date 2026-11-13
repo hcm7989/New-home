@@ -24,7 +24,8 @@
    "names": [
     "강일리버파크7단지"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "구리인창e편한세상",
@@ -34,7 +35,8 @@
     "인창2차e-편한세상",
     "인창이편한세상"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "구리인창주공1",
@@ -43,7 +45,8 @@
    "names": [
     "주공1"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "구리인창주공6",
@@ -52,7 +55,8 @@
    "names": [
     "주공6"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "다산e편한세상자이",
@@ -61,7 +65,8 @@
    "names": [
     "다산 이편한세상자이"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "다산롯데캐슬",
@@ -70,7 +75,8 @@
    "names": [
     "다산롯데캐슬"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "다산펜테리움",
@@ -80,7 +86,8 @@
     "다산 펜테리움 리버테라스 Ⅰ",
     "다산펜테리움리버테라스Ⅱ"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "덕소강변라온프라이빗",
@@ -89,7 +96,8 @@
    "names": [
     "덕소강변라온프라이빗"
    ],
-   "gap": false
+   "gap": false,
+   "thz": false
   },
   {
    "label": "덕소대성코오롱(현재집)",
@@ -99,7 +107,8 @@
     "강산마을코오롱대성",
     "강산마을코오롱대성107동"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "덕소아이파크",
@@ -108,7 +117,8 @@
    "names": [
     "덕소아이파크"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "미사강변골든센트로",
@@ -117,7 +127,8 @@
    "names": [
     "미사강변 골든 센트로"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "미사강변센트리버",
@@ -126,7 +137,8 @@
    "names": [
     "미사강변 센트리버"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "산성역포레스티아",
@@ -135,7 +147,8 @@
    "names": [
     "산성역포레스티아"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "성복아이파크",
@@ -144,7 +157,8 @@
    "names": [
     "성복아이파크"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "성복역아이파크",
@@ -153,7 +167,8 @@
    "names": [
     "성복역아이파크"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "신정마을주공1",
@@ -162,7 +177,8 @@
    "names": [
     "신정마을주공1"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "신흥역하늘채랜더스원",
@@ -173,7 +189,8 @@
     "신흥역하늘채랜더스원2단지",
     "신흥역하늘채랜더스원3단지"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "중앙동힐스테이트2차",
@@ -182,7 +199,8 @@
    "names": [
     "중앙동힐스테이트2차"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "하남신장에코타운1단지",
@@ -193,7 +211,8 @@
     "에코타운(B블럭)",
     "에코타운(C블럭)"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "래미안안양메가트리아",
@@ -202,7 +221,8 @@
    "names": [
     "래미안안양메가트리아"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "안양역한양수자인리버파크",
@@ -211,7 +231,8 @@
    "names": [
     "안양역한양수자인리버파크"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "매탄위브하늘채",
@@ -220,7 +241,8 @@
    "names": [
     "매탄위브하늘채"
    ],
-   "gap": true
+   "gap": true,
+   "thz": true
   },
   {
    "label": "래미안하이어스",
@@ -229,7 +251,8 @@
    "names": [
     "래미안하이어스"
    ],
-   "gap": true
+   "gap": true,
+   "thz": false
   },
   {
    "label": "매교역팰루시드",
@@ -243,7 +266,8 @@
     "59"
    ],
    "note": "2026년 8월 입주 신축(2,178세대). 국토부 아파트 매매 실거래에 59㎡ 거래가 잡히면 자동 반영됩니다. 59㎡ 분양가 약 7.36~7.38억.",
-   "since": "2026-08"
+   "since": "2026-08",
+   "thz": false
   },
   {
    "label": "화서주공4단지",
@@ -255,7 +279,9 @@
    "gap": true,
    "pt": [
     "59"
-   ]
+   ],
+   "thz": true
   }
- ]
+ ],
+ "thzNote": "토지거래허가구역(서울 전역+경기 12곳, 2025.10.20~2026.12.31) = 규제지역 LTV 40%"
 }

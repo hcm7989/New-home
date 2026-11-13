@@ -192,12 +192,16 @@ def aggregate():
             pk = s[s['dt'].dt.year.isin([2021, 2022])]['거래금액_만원']
             m21 = s[s['dt'].dt.year == 2021]['거래금액_만원']
             tail = s.sort_values('dt').tail(5)
+            y1 = s[s['dt'] > last - pd.Timedelta(days=365)]
+            hi = y1.loc[y1['거래금액_만원'].idxmax()] if len(y1) else None
             e = {'name': c['label'].replace('(현재집)', ''), 'region': c['region'], 'pt': pt,
                  'm': monthly_series([[t.strftime('%Y-%m-%d'), int(p)] for t, p in zip(s['dt'], s['거래금액_만원'])], months),
                  'n': int(len(s)),
                  'recent': [med(r6), int(len(r6))], 'r3': [med(r3), int(len(r3))],
                  'peak21': int(pk.max()) if len(pk) else None, 'med21': med(m21),
-                 'last': [[t.strftime('%Y-%m-%d'), int(p), int(f)] for t, p, f in zip(tail['dt'], tail['거래금액_만원'], tail['층'])]}
+                 'last': [[t.strftime('%Y-%m-%d'), int(p), int(f)] for t, p, f in zip(tail['dt'], tail['거래금액_만원'], tail['층'])],
+                 'hi12': [hi['dt'].strftime('%Y-%m-%d'), int(hi['거래금액_만원']), int(hi['층'])] if hi is not None else None,
+                 'thz': bool(c.get('thz'))}
             if len(r3) >= 5:
                 e['est'], e['estSrc'] = e['r3'][0], '3m'
             elif e['recent'][0]:
