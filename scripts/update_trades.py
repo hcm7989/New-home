@@ -201,7 +201,8 @@ def aggregate():
                  'peak21': int(pk.max()) if len(pk) else None, 'med21': med(m21),
                  'last': [[t.strftime('%Y-%m-%d'), int(p), int(f)] for t, p, f in zip(tail['dt'], tail['거래금액_만원'], tail['층'])],
                  'hi12': [hi['dt'].strftime('%Y-%m-%d'), int(hi['거래금액_만원']), int(hi['층'])] if hi is not None else None,
-                 'thz': bool(c.get('thz'))}
+                 'thz': bool(c.get('thz')), 'ref': bool(c.get('ref')), 'conv': c.get('conv'),
+                 'vol': {str(k): int(v) for k, v in s0.groupby(s0['dt'].dt.year).size().items()}}
             if len(r3) >= 5:
                 e['est'], e['estSrc'] = e['r3'][0], '3m'
             elif e['recent'][0]:
