@@ -224,7 +224,7 @@ def aggregate():
         elif key in prev_pts:  # 원천 데이터가 아직 없으면 이전 값 유지
             pts[key] = prev_pts[key]
     PTS.write_text(json.dumps({'start': base.strftime('%Y-%m-%d'), 'pts': pts}, separators=(',', ':')), encoding='utf-8')
-    AGG.write_text(json.dumps({'asof_trades': last.strftime('%Y-%m-%d'), 'months': months,
+    AGG.write_text(json.dumps({'asof_trades': last.strftime('%Y-%m-%d'), 'fetched': dt.datetime.now(KST).strftime('%Y-%m-%d'), 'months': months,
                                'updated': dt.datetime.now(KST).strftime('%Y-%m-%d %H:%M'),
                                'complexes': out}, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     print(f'요약 {len(out)}개 (실거래 ~{last:%Y-%m-%d}) → {AGG.relative_to(ROOT)}')
