@@ -949,7 +949,7 @@ function gapInfo(key){
   for(let i=s19;i<g.v.length;i++){ if(g.v[i]!=null&&(gMin==null||g.v[i]<gMin)){gMin=g.v[i];mMin=MONTHS[i];} }
   return {gNow,g21,g23,chg:gNow!=null&&g21!=null?gNow-g21:null,chg23:gNow!=null&&g23!=null?gNow-g23:null,gMin,mMin};
 }
-const LINKS={naver:n=>'https://new.land.naver.com/search?ms=&a=APT&e=RETAIL&query='+encodeURIComponent(n),hogang:n=>'https://hogangnono.com/search?q='+encodeURIComponent(n)};
+const LINKS={naver:n=>(/iPhone|iPad|Android/i.test(navigator.userAgent)?'https://m.search.naver.com':'https://search.naver.com')+'/search.naver?where=nexearch&query='+encodeURIComponent(n+' 아파트'),hogang:n=>'https://hogangnono.com/search?q='+encodeURIComponent(n)};
 
 /* ================= 신호 판정 ================= */
 function signals(){
@@ -1457,11 +1457,11 @@ function naverUrl(k){ const v=naverSaved(k); if(v){ if(/^\d+$/.test(v)) return i
 function parseNaver(t){ t=(t||'').trim(); const m=t.match(/complex(?:es)?\/(?:info\/)?(\d{3,})/)||t.match(/complexNo=(\d{3,})/)||t.match(/^(\d{3,})$/); if(m) return m[1]; const u=t.match(/https?:\/\/\S+/); return u?u[0]:null; }
 function naverBox(k,onDone){ const wrap=el('div'); wrap.style.cssText='width:100%'; const saved=naverSaved(k);
   const info=el('div','note'); info.style.marginTop='6px';
-  info.textContent=saved?`✓ 네이버 단지 페이지가 연결되어 있어 버튼을 누르면 바로 열립니다${/^\d+$/.test(saved)?' (단지번호 '+saved+')':''}.`:'아직 단지 페이지가 연결되지 않아 네이버 검색 결과로 열립니다. 한 번만 연결하면 다음부터 바로 열립니다.';
+  info.textContent=saved?`✓ 네이버 단지 페이지가 연결되어 있어 버튼을 누르면 바로 열립니다${/^\d+$/.test(saved)?' (단지번호 '+saved+')':''}.`:'아직 단지 페이지가 연결되지 않아 네이버에서 이 단지를 검색한 결과로 열립니다(검색 결과의 부동산 카드를 누르면 단지 페이지). 한 번만 연결하면 다음부터 바로 열립니다.';
   const row=el('div','btns'); row.style.cssText='margin-top:6px;align-items:center;flex-wrap:nowrap'; const inp=el('input'); inp.type='url'; inp.className='wide'; inp.placeholder='네이버부동산 단지 주소 또는 공유 링크 붙여넣기'; inp.style.flex='1';
   const sv=el('button','btn sm pri',saved?'변경':'연결'); sv.onclick=()=>{ const v=parseNaver(inp.value); if(!v){ toast('네이버부동산 단지 주소를 붙여넣어 주세요'); return; } S.naver=S.naver||{}; S.naver[lbl(k)]=v; save(); toast('네이버 단지 링크를 저장했습니다'); onDone&&onDone(); };
   row.append(inp,sv); if(saved){ const rm=el('button','btn sm','해제'); rm.onclick=()=>{ delete S.naver[lbl(k)]; save(); onDone&&onDone(); }; row.appendChild(rm); }
-  const how=el('div','note','연결 방법: ① ‘네이버부동산’ 버튼으로 검색 결과를 열고 이 단지를 누름 ② 주소창의 주소(…/complexes/숫자) 또는 앱의 ‘공유 → 링크 복사’를 여기에 붙여넣기 → 연결'); how.style.marginTop='4px';
+  const how=el('div','note','연결 방법: ① ‘네이버부동산’ 버튼으로 검색 결과를 열고 부동산 카드에서 이 단지를 누름 ② 주소창의 주소(…/complexes/숫자) 또는 앱의 ‘공유 → 링크 복사’를 여기에 붙여넣기 → 연결'); how.style.marginTop='4px';
   wrap.append(info,row,how); return wrap; }
 /* ================= v6: 호가 모아보기 ================= */
 function renderAsk(){ if(!$('askTable')) return; S.asks=S.asks||{}; const sc=S.askScope||'fresh'; segOn('segAskScope',sc);
