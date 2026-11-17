@@ -14,7 +14,7 @@
 :root{
   --bg:#0E1620;--panel:#16212C;--panel2:#1D2B38;--line:#26384A;--fg:#EEF3F7;--fg2:#C9D5DF;--mut:#9DB0C1;
   --acc:#5AAEFF;--accfg:#04121F;--up:#FF6B7D;--dn:#5B9BFF;--ok:#3DD68C;--warn:#FFB547;--bad:#FF6B7D;--purple:#B98CFF;
-  --grid:#223241;--c1:#5AAEFF;--c2:#FFB547;--c3:#3DD68C;--c4:#FF7EB6;--c5:#B98CFF;--c6:#2DD4BF;--ref:#6A8094;--tipbg:#0A121A;--hero1:#1B3552;--hero2:#16212C;--heroLine:#2C4A6A;
+  --grid:#223241;--c1:#5AAEFF;--c2:#FFB547;--c3:#3DD68C;--c4:#FF7EB6;--c5:#B98CFF;--c6:#2DD4BF;--c7:#F87171;--c8:#A3E635;--ref:#6A8094;--tipbg:#0A121A;--hero1:#1B3552;--hero2:#16212C;--heroLine:#2C4A6A;
   --okbg:rgba(61,214,140,.10);--okbd:rgba(61,214,140,.35);--oktx:#BDF3D7;
   --wbg:rgba(255,181,71,.10);--wbd:rgba(255,181,71,.40);--wtx:#FFDDA8;
   --rowalt:rgba(255,255,255,.025);--sel:rgba(90,174,255,.12);--hdr:rgba(14,22,32,.94);
@@ -22,7 +22,7 @@
 [data-theme=light]{
   --bg:#F3F5F8;--panel:#FFFFFF;--panel2:#EEF2F6;--line:#DDE4EB;--fg:#14202B;--fg2:#33424F;--mut:#5C6E7E;
   --acc:#1D6FE0;--accfg:#FFFFFF;--up:#E0314A;--dn:#1F63D6;--ok:#11905A;--warn:#C27400;--bad:#D62B43;--purple:#7A4FD6;
-  --grid:#E6EBF0;--c1:#1D6FE0;--c2:#D98200;--c3:#11905A;--c4:#D6337A;--c5:#7A4FD6;--c6:#0E9488;--ref:#94A3B1;--tipbg:#FFFFFF;--hero1:#E3EEFC;--hero2:#FFFFFF;--heroLine:#C8DAF2;
+  --grid:#E6EBF0;--c1:#1D6FE0;--c2:#D98200;--c3:#11905A;--c4:#D6337A;--c5:#7A4FD6;--c6:#0E9488;--c7:#C2410C;--c8:#4D7C0F;--ref:#94A3B1;--tipbg:#FFFFFF;--hero1:#E3EEFC;--hero2:#FFFFFF;--heroLine:#C8DAF2;
   --okbg:#E8F7EF;--okbd:#A7DFC2;--oktx:#0D6B43;--wbg:#FFF5E3;--wbd:#F2CF8E;--wtx:#7A4A00;
   --rowalt:#F7F9FB;--sel:#E7F0FD;--hdr:rgba(243,245,248,.94);--shadow:0 1px 3px rgba(20,32,43,.06);color-scheme:light}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -189,6 +189,11 @@ html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 .mlbl small{display:block;font-weight:500;color:var(--mut)}
 .leaflet-popup-content{font-size:13px;line-height:1.45;margin:10px 12px}.leaflet-popup-content b{font-size:14px}
 .leaflet-popup-content button{margin-top:6px;border:0;border-radius:8px;background:var(--acc);color:var(--accfg);font-weight:700;padding:6px 10px;cursor:pointer;font-family:inherit}
+.cmpchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cmpchips button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel);color:var(--fg2);border-radius:999px;padding:5px 10px;font:600 12.5px/1.2 inherit;cursor:pointer}
+.cmpchips button i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.cmpchips button.off{opacity:.45;text-decoration:line-through}.cmpchips button.off i{background:var(--line)!important}
+.cmpchips button b{font-weight:500;color:var(--mut);margin-left:2px}
 .btn.sm{min-height:32px;padding:5px 11px;font-size:12.5px}
 .tgl{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;margin-top:2px}
 @media(max-width:520px){.tgl{grid-template-columns:1fr}}
@@ -346,7 +351,12 @@ tr.sel td{background:var(--panel2)}
   </div>
   <div class="card">
     <h3 style="margin-top:0" id="gapChartTitle">갭 추이</h3>
-    <div class="seg sm" id="segView"><button data-v="one">선택 단지</button><button data-v="all">관심 단지 모두</button></div>
+    <div class="seg sm" id="segMetric"><button data-v="gap">현재집과 갭</button><button data-v="price">실거래가</button><button data-v="idx">상승률</button></div>
+    <div class="seg sm" id="segView"><button data-v="one">선택 단지</button><button data-v="all">여러 단지 겹쳐보기</button></div>
+    <div id="cmpBox" hidden>
+      <div class="cmpchips" id="cmpChips"></div>
+      <div class="btns" style="margin:6px 0 0;align-items:center"><select id="cmpAddSel" style="flex:1;min-width:0"></select><button class="btn sm" id="cmpAdd">＋ 추가</button></div>
+    </div>
     <div class="seg sm" id="segPeriod"><button data-v="2021">2021~</button><button data-v="3y">최근 3년</button><button data-v="2015">2015~</button></div>
     <div class="chart" id="chGap"></div>
     <div class="legend" id="lgGap"></div>
@@ -991,7 +1001,7 @@ function renderIdx(){
 }
 
 /* ================= 렌더: 갭 ================= */
-const PAL=['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)'];
+const PAL=['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)','var(--c7)','var(--c8)'];
 const DEF_PICK={'59':['다산e편한세상자이|59','래미안하이어스|59','구리인창주공1|59','하남신장에코타운1단지|59'],'84':['다산롯데캐슬|84','래미안하이어스|84','구리인창e편한세상|84','하남신장에코타운1단지|84']};
 const gapKeys=()=>{ const all=Object.keys(CX).filter(k=>CX[k].pt===S.pt&&k!==ME&&!k.startsWith('덕소대성'));
   if(S.gapScope!=='cand') return all; const pass=new Set(candidates(S.pt).filter(r=>r.pass).map(r=>r.k)); const c=all.filter(k=>pass.has(k)); return c.length?c:all; };
@@ -1187,18 +1197,42 @@ function renderGap(){ setTimeout(renderMap,0);
     d.onclick=()=>{ S.gapSel=k; S.gapView='one'; save(); renderGap(); $('chGap').scrollIntoView({behavior:'smooth',block:'center'}); };
     WL.appendChild(d); });
   // 차트
-  segOn('segView',S.gapView||'one'); segOn('segPeriod',S.gapPeriod);
+  const MET=S.gapMetric||'gap'; segOn('segMetric',MET); segOn('segView',S.gapView||'one'); segOn('segPeriod',S.gapPeriod);
   const start=S.gapPeriod==='2015'?0:S.gapPeriod==='2021'?Math.max(0,mIdx('2021-01')):Math.max(0,MONTHS.length-36);
   const labels=MONTHS.slice(start), cut=a=>a.slice(start);
   const one=(S.gapView||'one')==='one', sel=S.gapSel, SP=PL[sel];
-  let ser=[], refs=[];
-  if(one&&sel){ const g=gapSer(sel); ser=[{name:CX[sel].name+' '+CX[sel].pt+'㎡',color:'var(--acc)',values:cut(g.v),fill:cut(g.f),w:2.8}];
-    if(SP) refs=[{y:SP.g21,color:'var(--ok)',label:'21년 목표 '+eok(SP.g21)}];
-    $('gapChartTitle').textContent=CX[sel].name+' '+CX[sel].pt+'㎡ · 현재집과의 갭'; }
-  else { ser=order.map(k=>{const g=gapSer(k); return {name:CX[k].name+' '+CX[k].pt,color:color(k),values:cut(g.v),fill:cut(g.f)};}); $('gapChartTitle').textContent='관심 단지 갭 비교'; }
-  lineChart($('chGap'),labels,ser,{h:260,refs,fmt:v=>(v/10000).toFixed(1)+'억',tipFmt:v=>eok(v),xfmt:m=>S.gapPeriod==='3y'?m.slice(2).replace('-','.'):m.slice(0,4),tipLabel:m=>m.replace('-','.')+' · 현재집 대비',aria:'현재집 대비 갭 추이'});
-  const L=$('lgGap'); L.replaceChildren(); if(!one) ser.forEach(s0=>{const sp=el('span'); const i=el('i'); i.style.background=s0.color; sp.append(i,document.createTextNode(s0.name)); L.appendChild(sp);});
-  $('gapNote').textContent=!W.length?'관심 단지를 고르면 그래프가 나옵니다.':one?(SP?`선이 초록 점선(21년 목표) 아래로 내려오면 갈아타기 시점입니다. 지금 ${eok(SP.gNow)} · 목표까지 ${SP.rem>0?eok(SP.rem):'도달'}.`:'')+' 옅은 점선은 거래가 드물어 앞뒤를 이은 구간.':'선이 낮을수록 갈아타기 쉬운 단지입니다. 단지 카드를 누르면 목표선과 함께 따로 봅니다.';
+  // 비교 대상: 관심 단지 + 직접 추가한 단지
+  S.cmpExtra=(S.cmpExtra||[]).filter(k=>CX[k]&&!W.includes(k)); const pool=W.concat(S.cmpExtra); const off=new Set(S.cmpOff||[]);
+  const ccol=k=>PAL[pool.indexOf(k)%PAL.length];
+  const toIdx=v=>{ const b=v.find(x=>x!=null); return v.map(x=>x==null||!b?null:Math.round(x/b*1000)/10); };
+  const serOf=k=>{ if(MET==='gap'){ const g=gapSer(k); return {v:cut(g.v),f:cut(g.f)}; } const g=getSer(k); const v=cut(g.v); return {v:MET==='idx'?toIdx(v):v,f:cut(g.f)}; };
+  const myLine=()=>{ const g=serOf(ME); return {name:'덕소 현재집 59',color:'var(--ref)',values:g.v,fill:g.f,dash:true,w:2}; };
+  let ser=[], refs=[]; const nm=k=>CX[k].name+' '+CX[k].pt+(one?'㎡':'');
+  const MT={gap:'현재집과의 갭',price:'실거래가 추이',idx:'상승률 비교 (시작=100)'}[MET];
+  if(one&&sel){ const g=serOf(sel); ser=[{name:nm(sel),color:'var(--acc)',values:g.v,fill:g.f,w:2.8}];
+    if(MET==='gap'&&SP) refs=[{y:SP.g21,color:'var(--ok)',label:'21년 목표 '+eok(SP.g21)}];
+    if(MET!=='gap') ser.push(myLine());
+    $('gapChartTitle').textContent=CX[sel].name+' '+CX[sel].pt+'㎡ · '+MT; }
+  else { ser=pool.filter(k=>!off.has(k)&&hasData(k)).map(k=>{ const g=serOf(k); return {name:nm(k),color:ccol(k),values:g.v,fill:g.f}; });
+    if(MET!=='gap') ser.push(myLine()); else refs=[{y:0,color:'var(--ref)',label:'갭 0'}];
+    $('gapChartTitle').textContent='여러 단지 · '+MT; }
+  $('cmpBox').hidden=one;
+  if(!one){ const C=$('cmpChips'); C.replaceChildren(); const nOn=pool.filter(k=>!off.has(k)).length;
+    pool.forEach(k=>{ const b=document.createElement('button'); const isOff=off.has(k)||!hasData(k); if(isOff) b.classList.add('off'); const i=document.createElement('i'); i.style.background=ccol(k);
+      b.append(i,document.createTextNode(CX[k].name+' '+CX[k].pt)); const ex=S.cmpExtra.includes(k);
+      if(ex){ const x=el('b',null,'✕'); x.title='비교에서 빼기'; x.onclick=e=>{ e.stopPropagation(); S.cmpExtra=S.cmpExtra.filter(z=>z!==k); S.cmpOff=(S.cmpOff||[]).filter(z=>z!==k); save(); renderGap(); }; b.appendChild(x); }
+      b.title=hasData(k)?(isOff?'눌러서 표시':'눌러서 숨기기'):'거래 데이터 없음';
+      b.onclick=()=>{ if(!hasData(k)) return; const o=new Set(S.cmpOff||[]); if(o.has(k)) o.delete(k); else o.add(k); S.cmpOff=[...o]; save(); renderGap(); }; C.appendChild(b); });
+    const sl=$('cmpAddSel'); sl.replaceChildren(); const o0=document.createElement('option'); o0.value=''; o0.textContent=pool.length>=12?'비교 단지는 최대 12곳':'다른 단지 추가…'; sl.appendChild(o0);
+    if(pool.length<12) Object.keys(CX).filter(k=>k!==ME&&!pool.includes(k)&&hasData(k)).sort((a,b)=>(CX[a].region||'').localeCompare(CX[b].region||'','ko')||CX[a].name.localeCompare(CX[b].name,'ko')).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=`${CX[k].region||''} · ${CX[k].name} ${CX[k].pt}㎡${CX[k].thz?' (토허)':''}`; sl.appendChild(o); }); }
+  const isIdx=MET==='idx';
+  lineChart($('chGap'),labels,ser,{h:one?260:300,refs,fmt:isIdx?(v=>v.toFixed(0)):(v=>(v/10000).toFixed(1)+'억'),tipFmt:isIdx?(v=>v.toFixed(1)):(v=>eok(v)),xfmt:m=>m.slice(2).replace('-','.'),tipLabel:m=>m.replace('-','.')+(MET==='gap'?' · 현재집 대비':MET==='idx'?` · ${labels[0].replace('-','.')}=100`:' · 월평균 실거래'),aria:MT});
+  const L=$('lgGap'); L.replaceChildren(); if(!one||MET!=='gap') ser.forEach(s0=>{const sp=el('span'); const i=el('i'); i.style.background=s0.color; if(s0.dash) i.style.cssText+=';background:repeating-linear-gradient(90deg,var(--ref) 0 5px,transparent 5px 8px)'; sp.append(i,document.createTextNode(s0.name)); L.appendChild(sp);});
+  $('gapNote').textContent=!W.length&&!pool.length?'관심 단지를 고르면 그래프가 나옵니다.'
+    :MET==='price'?'단지별 월평균 실거래가(해당 평형). 거래가 없던 달은 앞뒤를 이은 점선입니다. 회색 점선은 덕소 현재집.'
+    :MET==='idx'?`그래프 시작 월(${labels[0].replace('-','.')})의 가격을 100으로 맞춰 오른 폭을 비교합니다. 가격대가 달라도 어느 단지가 더 많이 올랐는지 바로 보입니다.`
+    :one?(SP?`선이 초록 점선(21년 목표) 아래로 내려오면 갈아타기 시점입니다. 지금 ${eok(SP.gNow)} · 목표까지 ${SP.rem>0?eok(SP.rem):'도달'}.`:'')
+    :'각 단지 가격 − 덕소 현재집 가격. 선이 내려갈수록 갈아타기 부담이 줄어듭니다. 칩을 눌러 선을 숨기거나 보일 수 있습니다.';
   // 편집 토글
   const TG=$('watchToggles'); TG.replaceChildren();
   ['59','84'].forEach(pt=>{ TG.appendChild(el('div','grp',pt==='59'?'59㎡ (24평)':'84㎡ (34평)'));
@@ -1405,6 +1439,8 @@ numF.forEach(k=>{const i=$('in-'+k); i.addEventListener('input',()=>{const v=par
 ['zone','when'].forEach(k=>$('in-'+k).addEventListener('change',e=>{S[k]=e.target.value; save(); renderAll();}));
 ['acqDate','saleDate','newDate','doneDate'].forEach(k=>$('in-'+k).addEventListener('change',e=>{S[k]=e.target.value; save(); renderTax();}));
 [...$('segView').children].forEach(b=>b.onclick=()=>{S.gapView=b.dataset.v; save(); renderGap();});
+[...$('segMetric').children].forEach(b=>b.onclick=()=>{S.gapMetric=b.dataset.v; save(); renderGap();});
+$('cmpAdd').onclick=()=>{ const k=$('cmpAddSel').value; if(!k) return; S.cmpExtra=(S.cmpExtra||[]).concat(k); save(); renderGap(); };
 [...$('segPeriod').children].forEach(b=>b.onclick=()=>{S.gapPeriod=b.dataset.v; save(); renderGap();});
 [['segCmScope','cmScope'],['segCmMode','cmMode'],['segCmWork','cmWork']].forEach(([id,k])=>[...$(id).children].forEach(b=>b.onclick=()=>{S[k]=b.dataset.v; save(); renderCommute(); renderHome(); renderGap();}));
 document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{ go('p-plan'); const v=b.dataset.open; [...$('segPlan').children].forEach(x=>x.classList.toggle('on',x.dataset.v===v)); ['plans','tax','check'].forEach(x=>$('v-'+x).hidden=x!==v); }));

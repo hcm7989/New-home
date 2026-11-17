@@ -1,6 +1,6 @@
 // Service Worker v5
-const CACHE='newhome-v5-20261117l';
-const ASSETS=['./','./index.html','./manifest.json'];
+const CACHE='newhome-v6-20261117a';
+const ASSETS=['./','./index.html','./v6.html','./manifest.json','./manifest6.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{
