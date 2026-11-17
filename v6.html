@@ -297,7 +297,7 @@ a:hover{text-decoration:underline}
 .score .tr i{display:block;height:100%;background:var(--acc)}
 
 /* map */
-#mapBox{height:380px;border-radius:10px;overflow:hidden;margin-top:4px;background:var(--panel2);position:relative;z-index:0;border:1px solid var(--line)}
+#mapBox{height:420px;border-radius:10px;overflow:hidden;margin-top:4px;background:var(--panel2);position:relative;z-index:0;border:1px solid var(--line)}
 html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.7)}
 .maplg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--mut);margin-top:8px}.maplg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:-1px}
 .maplg i.r{background:transparent;border:2px solid var(--bad);width:7px;height:7px}.maplg i.sq{background:#334;border-radius:2px}
@@ -353,6 +353,25 @@ html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 .askbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.askbar .mut{font-size:12px}
 .empty{padding:22px 10px;text-align:center;color:var(--mut);font-size:13px}
 .mon td{padding-top:9px;padding-bottom:9px}
+#mapCard{position:relative;padding:0;overflow:hidden;margin-bottom:8px}
+#mapCard #mapBox{margin:0;border:0;border-radius:0}
+#mapCard>.ch{position:absolute;top:10px;left:56px;right:10px;z-index:500;margin:0;pointer-events:none;justify-content:flex-start}
+#mapCard>.ch>*{pointer-events:auto}
+#mapCard>.ch h3{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 10px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+#mapCard>.ch .seg{box-shadow:0 2px 8px rgba(0,0,0,.18);background:var(--panel)}
+#mapCard .maplg{position:absolute;left:10px;bottom:10px;z-index:500;margin:0;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:calc(100% - 20px);box-shadow:0 2px 8px rgba(0,0,0,.18)}
+@media (max-width:719px){#uv-map{margin:0 -16px}#mapCard{border-radius:0;border-left:0;border-right:0}#uv-map>.note{padding:0 16px}}
+#mapCard>.ch h3{display:none}
+.dsel{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.dbtns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.dbtns .chip{min-height:26px;padding:3px 10px;font-size:12px}
+td.dual div{line-height:1.35;font-size:11.5px;color:var(--mut);font-weight:500}
+td.dual div.act{font-size:13px;font-weight:700}
+td.dual div:not(.act){color:var(--mut)!important}
+td.dual .km2{font-size:10px;color:var(--mut);font-weight:400}
+th.scn{background:var(--accbg)!important;color:var(--acc)}
+td.scn{background:var(--accbg);font-weight:750}
+tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
 
 /* ---------- responsive ---------- */
 @media (min-width:720px){
@@ -388,7 +407,6 @@ html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180
   .dIn{width:min(560px,92vw);max-height:none;height:100vh;border-radius:0;border-width:0 0 0 1px;animation:slide .22s ease}
   @keyframes slide{from{transform:translateX(30px);opacity:.6}to{transform:none;opacity:1}}
   #toast{bottom:28px}
-  #mapBox{height:520px}
 }
 @media (max-width:1079px){ .hide-m{display:none!important} }
 @media (min-width:1080px){ .hide-d{display:none!important} }
@@ -468,7 +486,12 @@ html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180
   <div class="g g-main">
     <div class="card">
       <div class="ch"><h3>관심 단지 갭 추이</h3><span class="mut" style="font-size:11.5px">현재집 대비 · 2021~ · 점선 = 갭 0</span></div>
-      <div class="chart" id="chDash"></div><div class="legend" id="lgDash"></div>
+      <div class="chart" id="chDash"></div>
+      <div class="dsel">
+        <div class="dbtns" id="dashBtns"></div>
+        <div class="cmpchips" id="dashChips"></div>
+        <div class="btns" style="margin-top:8px;align-items:center"><select id="dashAddSel" style="flex:1;min-width:0;max-width:340px"></select><button class="btn sm pri" id="dashAdd">＋ 단지 추가</button></div>
+      </div>
     </div>
     <div class="stack">
       <div class="card"><div class="ch"><h3>예산 안에서 갈 수 있는 곳</h3><span class="tag acc" id="candV">—</span></div><div id="candList"></div><div class="note" id="candBasis"></div></div>
@@ -530,7 +553,7 @@ html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180
       <span class="mut" id="uCount" style="font-size:12px"></span>
     </div>
     <div class="card flush"><div class="tw"><table id="unitTable"></table></div></div>
-    <div class="note">★ 관심 단지(최대 8곳)는 대시보드 갭 모니터와 차트에 표시됩니다. <b>목표까지</b> = 현재 갭 − 2021년 평균 갭(0 이하면 도달). <b>예산</b> = 내 자금 조건에서 필요한 대출 · DSR. <b>통근</b> = 나 + 아내 대중교통 편도 합. 열 제목을 누르면 정렬.</div>
+    <div class="note">★ 관심 단지(최대 8곳)는 대시보드 갭 모니터와 차트에 표시됩니다. <b>목표까지</b> = 현재 갭 − 2021년 평균 갭(0 이하면 도달). <b>예산</b> = 내 자금 조건에서 필요한 대출 · DSR. <b>통근</b> = 나 + 아내 편도 합(직주근접에서 고른 수단 조합). 열 제목을 누르면 정렬.</div>
     <div class="askbar" style="margin-top:12px"><label class="btn pri" for="askFile"><svg class="ic"><use href="#i-cam"/></svg>네이버 호가 캡처 넣기</label><span class="mut" id="askMsg">캡처를 고르거나 이 화면에서 붙여넣기(Ctrl+V)</span></div>
   </div>
   <div id="uv-chart" hidden>
@@ -556,8 +579,8 @@ html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180
       <div class="ch"><h3>지도</h3><div class="seg sm" id="segMap" style="margin:0"><button data-v="watch">관심 단지</button><button data-v="real">현실 후보</button><button data-v="all">전체</button></div></div>
       <div id="mapBox"><div class="mut" style="padding:40px 0;text-align:center">지도를 불러오는 중…</div></div>
       <div class="maplg"><span><i style="background:var(--ok)"></i>21년 갭 도달</span><span><i style="background:var(--warn)"></i>5천 이내</span><span><i style="background:#8A9AAB"></i>대기</span><span><i class="r"></i>토허제</span><span><i style="background:var(--acc)"></i>현재집</span><span><i class="sq"></i>회사·장모님댁</span></div>
-      <div class="note">확대하면 단지 이름과 목표까지 남은 갭이 표시됩니다. 핀을 누르면 요약이 나오고 ‘상세 보기’로 단지 상세가 열립니다. 지도 © OpenStreetMap 기여자.</div>
     </div>
+    <div class="note">확대하면 단지 이름과 목표까지 남은 갭이 표시됩니다. 핀을 누르면 요약이 나오고 ‘상세 보기’로 단지 상세가 열립니다. 지도 © OpenStreetMap 기여자.</div>
   </div>
   <div class="card" id="bunCard" hidden>
     <div class="ch"><h3>분양권 호가</h3><span class="mut" style="font-size:11.5px">매매가 = 분양가 + 프리미엄 + 옵션</span></div>
@@ -703,8 +726,15 @@ html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180
   <h2>직주근접</h2>
   <p class="sub">단지에서 나의 회사 · 와이프 회사 · 장모님댁까지 걸리는 시간 · 카카오맵 길찾기 기준(<span id="cmAsof">—</span>)</p>
   <div class="seg" id="segCmScope"><button data-v="cand">예산 통과 후보만</button><button data-v="all">관심 단지 전체</button></div>
-  <div class="seg" id="segCmMode"><button data-v="tr">🚇 대중교통</button><button data-v="car">🚗 출근 8시</button><button data-v="free">🚗 한산할 때</button></div>
-  <div class="seg sm" id="segCmWork"><button data-v="work1">내 회사: 자곡로 (K2)</button><button data-v="work2">내 회사: 남부순환로 (도곡)</button></div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="ch"><h3>통근 시뮬레이션</h3><span class="mut" style="font-size:11.5px">부부합 = 나 + 아내 편도 · 표의 ‘합’ 열은 앞=나, 뒤=아내</span></div>
+    <div class="ctrl" style="margin-bottom:0">
+      <div class="seg sm" id="segCmScen"><button data-v="tt">🚇 나 · 🚇 아내</button><button data-v="ct">🚗 나 · 🚇 아내</button><button data-v="tc">🚇 나 · 🚗 아내</button><button data-v="cc">🚗 나 · 🚗 아내</button></div>
+      <div class="seg sm" id="segCmCar"><button data-v="car">🚗 출근 8시 기준</button><button data-v="free">🚗 한산할 때</button></div>
+      <div class="seg sm" id="segCmWork"><button data-v="work1">내 회사: 자곡로 (K2)</button><button data-v="work2">내 회사: 남부순환로 (도곡)</button></div>
+    </div>
+  </div>
+
   <div class="card">
     <h3 style="margin-top:0">단지별 통근 시간 <span class="pill" id="cmSortLbl"></span></h3>
     <p class="sub">‘나’는 위에서 고른 회사 기준, 시간 아래 작은 글씨는 자동차 거리입니다. ‘부부합’은 나+아내 편도 합계, 아래 작은 숫자는 현재집보다 줄어드는(−)·늘어나는(+) 분입니다. 맨 위 줄은 현재집입니다. 행을 누르면 아래에 상세 경로와 지도 링크가 나옵니다. 열 제목을 누르면 정렬됩니다.</p>
@@ -1000,7 +1030,7 @@ function mapKeys(){ const v=S.mapScope||'watch';
   if(v==='all'){ const seen=new Set(); return Object.keys(CX).filter(k=>k!==ME&&hasData(k)).sort((a,b)=>(a.split('|')[1]==='59'?0:1)-(b.split('|')[1]==='59'?0:1)).filter(k=>{ const l=lbl(k); if(seen.has(l)) return false; seen.add(l); return true; }); }
   return watchKeys(); }
 function renderMap(){ [...$('segMap').children].forEach(b=>b.classList.toggle('on',b.dataset.v===(S.mapScope||'watch')));
-  const box=$('mapBox'); if(!box.offsetParent) return;
+  const box=$('mapBox'); if(!box.offsetParent) return; fitMapBox();
   loadLeaflet().then(()=>{
     if(!LMAP){ box.replaceChildren(); LMAP=L.map(box,{zoomControl:true,attributionControl:true}); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(LMAP); LLAYER=L.layerGroup().addTo(LMAP); LMAP.on('zoomend',()=>{ const z=LMAP.getZoom()>=MAP_LBLZ; if(z!==LMAP._lbl){ LMAP._lbl=z; drawPins(false); } }); }
     drawPins(true);
@@ -1107,7 +1137,7 @@ function renderReal(){ const RL=realList(); const C=REAL_C;
     const tl=el('div','rtools'); const inp=el('input'); inp.type='number'; inp.step='100'; inp.value=r.ask; inp.title='호가(만원)';
     const sv=el('button','btn sm pri','호가 저장'); sv.onclick=()=>{ const v=+inp.value; if(!(v>=3000)){ toast('호가를 확인해주세요'); return; } r.ask=v; r.date=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}); save(); renderReal(); toast('호가 저장'); };
     const dt=el('button','btn sm','단지 상세'); dt.onclick=()=>openUnit(k);
-    const lk=el('a','btn sm','네이버부동산 ↗'); lk.href=LINKS.naver(c.name); lk.target='_blank'; lk.rel='noopener';
+    const lk=el('a','btn sm','네이버부동산 ↗'); lk.href=naverUrl(k); lk.target='_blank'; lk.rel='noopener';
     const rm=el('button','btn sm','후보에서 빼기'); rm.onclick=()=>{ S.real=S.real.filter(x=>x!==r); save(); renderReal(); };
     tl.append(inp,el('span','mut','만'),sv,dt,lk,rm); d.appendChild(tl); L.appendChild(d); }
   const sel=$('realAddSel'); sel.replaceChildren(); const used=new Set(RL.map(r=>r.k));
@@ -1119,14 +1149,17 @@ const CM_MODE={tr:'대중교통',car:'출근길 자동차(월 8시)',free:'한�
 const CM_DEST={work1:'회사(자곡)',work2:'회사(도곡)',wife:'와이프 회사',inlaw:'장모님댁'};
 const lbl=k=>k.split('|')[0];
 function cmOf(label){ const C=DATA.commute; return C&&C.complexes?C.complexes[label]:null; }
+const CM_SC={tt:['tr','tr'],ct:['car','tr'],tc:['tr','car'],cc:['car','car']};
+const CM_SCL={tt:'합 🚇🚇',ct:'합 🚗🚇',tc:'합 🚇🚗',cc:'합 🚗🚗'};
+const scen=()=>CM_SC[S.cmScen]?S.cmScen:'tt';
+const pMode=who=>CM_SC[scen()][who==='wife'?1:0];
 function cmMin(label,dest,mode){ const c=cmOf(label); if(!c) return null; const r=c.r[dest==='me'?S.cmWork:dest]; if(!r) return null;
-  mode=mode||S.cmMode; return mode==='tr'?r.tr:mode==='car'?r.car8:r.carNow; }
-function cmSum(label,mode){ const a=cmMin(label,'me',mode), b=cmMin(label,'wife',mode); return a==null||b==null?null:a+b; }
+  mode=mode||(dest==='wife'?pMode('wife'):pMode('me')); if(mode==='car') mode=S.cmCarT==='free'?'free':'car'; return mode==='tr'?r.tr:mode==='car'?r.car8:r.carNow; }
+function cmSum(label,sc){ const m=sc?CM_SC[sc]:CM_SC[scen()]; const a=cmMin(label,'me',m[0]), b=cmMin(label,'wife',m[1]); return a==null||b==null?null:a+b; }
 const cmCls=m=>m==null?'':m<=45?'ok':m<=65?'warn':'bad';
 const mn=m=>m==null?'—':m>=60?Math.floor(m/60)+'시간 '+(m%60?m%60+'분':''):m+'분';
 function cmLine(label){ const d=el('div','cm'); if(!cmOf(label)) return d;
-  const ic=S.cmMode==='tr'?'🚇':'🚗';
-  [['me','나'],['wife','아내'],['inlaw','장모님댁']].forEach(([k,t])=>{ const m=cmMin(label,k); const sp=el('span',null,(k==='me'?ic+' ':'')+t+' '); sp.appendChild(el('b',cmCls(m),mn(m))); d.appendChild(sp); });
+  [['me','나'],['wife','아내'],['inlaw','장모님댁']].forEach(([k,t])=>{ const md=k==='wife'?pMode('wife'):pMode('me'); const m=cmMin(label,k,md); const sp=el('span',null,(md==='tr'?'🚇 ':'🚗 ')+t+' '); sp.appendChild(el('b',cmCls(m),mn(m))); d.appendChild(sp); });
   return d; }
 const isMob=/iPhone|iPad|Android/i.test(navigator.userAgent);
 function merc(lat,lon){ const x=lon*20037508.34/180; const y=Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180)*20037508.34/180; return [x.toFixed(1),y.toFixed(1)]; }
@@ -1142,27 +1175,32 @@ function cmLabels(){ const C=DATA.commute; if(!C) return [];
 function renderCommute(){
   const C=DATA.commute; if(!C){ $('cmTable').replaceChildren(); $('cmNote').textContent='직주근접 데이터를 불러오지 못했습니다.'; return; }
   $('cmAsof').textContent=C.asof;
-  [['segCmScope','cmScope'],['segCmMode','cmMode'],['segCmWork','cmWork']].forEach(([id,k])=>[...$(id).children].forEach(b=>b.classList.toggle('on',b.dataset.v===S[k])));
-  const base=lbl(ME), b0={me:cmMin(base,'me'),wife:cmMin(base,'wife'),inlaw:cmMin(base,'inlaw'),sum:cmSum(base)};
-  const labels=cmLabels();
-  const rows=labels.map(l=>{ const r={l,me:cmMin(l,'me'),wife:cmMin(l,'wife'),inlaw:cmMin(l,'inlaw'),sum:cmSum(l)}; r.diff=r.sum!=null&&b0.sum!=null?r.sum-b0.sum:null; return r; });
-  const COLS=[['l','단지'],['me','나'],['wife','아내'],['sum','부부합'],['inlaw','장모님']];
+  if(!CM_SC[S.cmScen]) S.cmScen='tt'; if(S.cmCarT!=='free') S.cmCarT='car';
+  [['segCmScope','cmScope'],['segCmScen','cmScen'],['segCmCar','cmCarT'],['segCmWork','cmWork']].forEach(([id,k])=>[...$(id).children].forEach(b=>b.classList.toggle('on',b.dataset.v===S[k])));
+  const SCS=['tt','ct','tc','cc'], cur=scen();
+  const mk=l=>{ const r={l}; ['me','wife','inlaw'].forEach(d=>{ r[d+'T']=cmMin(l,d,'tr'); r[d+'C']=cmMin(l,d,'car'); }); SCS.forEach(x=>r[x]=cmSum(l,x)); return r; };
+  const base=lbl(ME), b0=mk(base);
+  const rows=cmLabels().map(mk);
+  const COLS=[['l','단지'],['meT','나'],['wifeT','아내'],...SCS.map(x=>[x,CM_SCL[x]]),['inlawT','장모님']];
+  if(!S.cmSort||!COLS.some(c=>c[0]===S.cmSort.k)) S.cmSort={k:cur,d:1};
   const {k:sk,d:sd}=S.cmSort;
   rows.sort((a,b)=>{ if(sk==='l') return a.l.localeCompare(b.l,'ko')*sd; const x=a[sk],y=b[sk]; if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return (x-y)*sd; });
   const T=$('cmTable'); T.replaceChildren(); const th=el('thead'), hr=el('tr');
-  COLS.forEach(([k,t])=>{ const h=el('th','sort'+(k===sk?' on':''),t+(k===sk?(sd>0?' ▲':' ▼'):'')); h.onclick=()=>{ S.cmSort=sk===k?{k,d:-sd}:{k,d:1}; save(); renderCommute(); }; hr.appendChild(h); });
+  COLS.forEach(([k,t])=>{ const h=el('th','sort'+(k===sk?' on':'')+(k===cur?' scn':''),t+(k===sk?(sd>0?' ▲':' ▼'):'')); h.onclick=()=>{ S.cmSort=sk===k?{k,d:-sd}:{k,d:1}; save(); renderCommute(); }; hr.appendChild(h); });
   th.appendChild(hr); T.appendChild(th);
   $('cmSortLbl').textContent=COLS.find(c=>c[0]===sk)[1]+(sd>0?' 짧은 순':' 긴 순');
-  const tb=el('tbody');
+  const tb=el('tbody'); const carLbl=S.cmCarT==='free'?'한산':'8시';
+  const kmOf=(l,d)=>{ const c=cmOf(l); const x=c&&c.r[d==='me'?S.cmWork:d]; return x?x.km:null; };
   const addRow=(r,isMe)=>{ const tr=el('tr',(isMe?'me ':'')+(S.cmSel===r.l?'sel':'')); { const t0=el('td',null,isMe?'🏠 현재집':r.l); const ck=Object.keys(CX).find(k=>lbl(k)===r.l); if(!isMe&&ck&&CX[ck].thz) t0.appendChild(el('span','thz','토허')); tr.appendChild(t0); }
-    const kmOf=d=>{ const c=cmOf(r.l); const x=c&&c.r[d==='me'?S.cmWork:d]; return x?x.km:null; };
-    const tdk=(k)=>{ const t=el('td',cmCls(r[k]),r[k]==null?'—':r[k]+'분'); const km=kmOf(k); if(km!=null) t.appendChild(el('span','km','🚗 '+km+'km')); return t; };
-    ['me','wife'].forEach(k=>tr.appendChild(tdk(k)));
-    const ts=el('td',cmCls(r.sum/2),r.sum==null?'—':r.sum+'분'); if(!isMe&&r.diff!=null){ const sm=el('small',r.diff<0?'ok':r.diff>0?'bad':'',' '+(r.diff>0?'+':r.diff<0?'−':'±')+Math.abs(r.diff)); sm.style.fontSize='11.5px'; sm.style.display='block'; ts.appendChild(sm);} tr.appendChild(ts);
-    tr.appendChild(tdk('inlaw'));
+    ['me','wife','inlaw'].forEach((d,ix)=>{ if(ix===2) return; const td=el('td','dual'); const pm=d==='inlaw'?pMode('me'):pMode(d);
+      const a=el('div',(pm==='tr'?'act ':'')+cmCls(r[d+'T']),'🚇 '+(r[d+'T']==null?'—':r[d+'T']+'분')), b=el('div',(pm==='car'?'act ':'')+cmCls(r[d+'C']),'🚗 '+(r[d+'C']==null?'—':r[d+'C']+'분'));
+      const km=kmOf(r.l,d); if(km!=null) b.appendChild(el('span','km2',' '+km+'km')); td.append(a,b); tr.appendChild(td); });
+    SCS.forEach(x=>{ const v=r[x], df=v!=null&&b0[x]!=null?v-b0[x]:null; const td=el('td',(x===cur?'scn ':'')+cmCls(v==null?null:v/2),v==null?'—':v+'분');
+      if(!isMe&&df!=null){ const sm=el('small',df<0?'ok':df>0?'bad':'',(df>0?'+':df<0?'−':'±')+Math.abs(df)); sm.style.cssText='font-size:10.5px;display:block'; td.appendChild(sm); } tr.appendChild(td); });
+    { const pm=pMode('me'); const td=el('td','dual'); td.append(el('div',(pm==='tr'?'act ':'')+cmCls(r.inlawT),'🚇 '+(r.inlawT==null?'—':r.inlawT+'분')),el('div',(pm==='car'?'act ':'')+cmCls(r.inlawC),'🚗 '+(r.inlawC==null?'—':r.inlawC+'분'))); tr.appendChild(td); }
     tr.style.cursor='pointer'; tr.onclick=()=>{ S.cmSel=r.l; save(); renderCommute(); $('cmDetail').scrollIntoView({behavior:'smooth',block:'start'}); }; tb.appendChild(tr); };
-  addRow({l:base,...b0,diff:0},true); rows.forEach(r=>addRow(r,false)); T.appendChild(tb);
-  $('cmNote').textContent=`${CM_MODE[S.cmMode]} 기준 · ${S.cmScope==='cand'?'예산 통과 후보 '+rows.length+'곳':'관심 단지 '+rows.length+'곳'}. 색: 45분 이하 초록 · 65분 이하 주황 · 그 이상 빨강(부부 합계는 1인 평균 기준). ${C.note} 실제 시간은 날씨·배차에 따라 달라지니 아래 지도 링크로 확인하세요.`;
+  addRow(b0,true); rows.forEach(r=>addRow(r,false)); T.appendChild(tb);
+  $('cmNote').textContent=`선택한 시뮬레이션: ${CM_SCL[cur]} (자동차는 ${S.cmCarT==='free'?'한산할 때':'월 오전 8시 출발'} 기준) · ${S.cmScope==='cand'?'예산 통과 후보 '+rows.length+'곳':'관심 단지 '+rows.length+'곳'}. 부부합 4개 열은 각 조합의 나+아내 편도 합계이고, 작은 숫자는 같은 조합으로 현재집에서 다닐 때보다 줄어드는(−)·늘어나는(+) 분입니다. 진하게 표시된 시간이 선택한 조합에서 쓰는 수단입니다. 색: 1인 평균 45분 이하 초록 · 65분 이하 주황 · 그 이상 빨강. ${C.note}`;
   // 상세
   const sel=S.cmSel&&cmOf(S.cmSel)?S.cmSel:(rows[0]?rows[0].l:base); const c=cmOf(sel), D=$('cmDetail'); D.replaceChildren();
   const h=el('h3',null,(sel===base?'🏠 현재집 (덕소)':sel)+' → 목적지별 상세'); h.style.marginTop='0'; D.appendChild(h);
@@ -1381,6 +1419,22 @@ function plan21(k){ const gi=gapInfo(k); if(gi.gNow==null||gi.g21==null) return 
   const m=calcMoney(CX[k].est,false,zoneOf(k));
   return {...gi,gMax,mMax,rem,pct,st,pass:m.shortage===0&&m.dsr<=40,short:m.shortage,dsr:m.dsr}; }
 const ym=m=>m?m.slice(2).replace('-','.'):'';
+/* ================= v6: 네이버부동산 단지 링크 ================= */
+function naverSaved(k){ return (S.naver||{})[lbl(k)]||null; }
+function naverUrl(k){ const v=naverSaved(k); if(v){ if(/^\d+$/.test(v)) return isMob?`https://m.land.naver.com/complex/info/${v}?tradTpCd=A1&ptpNo=1`:`https://new.land.naver.com/complexes/${v}?a=APT:ABYG:JGC&e=RETAIL&b=A1`; return v; }
+  const c=CX[k]||{name:lbl(k)}; return LINKS.naver(c.name); }
+function parseNaver(t){ t=(t||'').trim(); const m=t.match(/complex(?:es)?\/(?:info\/)?(\d{3,})/)||t.match(/complexNo=(\d{3,})/)||t.match(/^(\d{3,})$/); if(m) return m[1]; const u=t.match(/https?:\/\/\S+/); return u?u[0]:null; }
+function naverBox(k,onDone){ const wrap=el('div'); wrap.style.cssText='width:100%'; const saved=naverSaved(k);
+  const info=el('div','note'); info.style.marginTop='6px';
+  info.textContent=saved?`✓ 네이버 단지 페이지가 연결되어 있어 버튼을 누르면 바로 열립니다${/^\d+$/.test(saved)?' (단지번호 '+saved+')':''}.`:'아직 단지 페이지가 연결되지 않아 네이버 검색 결과로 열립니다. 한 번만 연결하면 다음부터 바로 열립니다.';
+  const row=el('div','btns'); row.style.cssText='margin-top:6px;align-items:center;flex-wrap:nowrap'; const inp=el('input'); inp.type='url'; inp.className='wide'; inp.placeholder='네이버부동산 단지 주소 또는 공유 링크 붙여넣기'; inp.style.flex='1';
+  const sv=el('button','btn sm pri',saved?'변경':'연결'); sv.onclick=()=>{ const v=parseNaver(inp.value); if(!v){ toast('네이버부동산 단지 주소를 붙여넣어 주세요'); return; } S.naver=S.naver||{}; S.naver[lbl(k)]=v; save(); toast('네이버 단지 링크를 저장했습니다'); onDone&&onDone(); };
+  row.append(inp,sv); if(saved){ const rm=el('button','btn sm','해제'); rm.onclick=()=>{ delete S.naver[lbl(k)]; save(); onDone&&onDone(); }; row.appendChild(rm); }
+  const how=el('div','note','연결 방법: ① ‘네이버부동산’ 버튼으로 검색 결과를 열고 이 단지를 누름 ② 주소창의 주소(…/complexes/숫자) 또는 앱의 ‘공유 → 링크 복사’를 여기에 붙여넣기 → 연결'); how.style.marginTop='4px';
+  wrap.append(info,row,how); return wrap; }
+/* ================= v6: 지도 크기 ================= */
+function fitMapBox(){ const box=$('mapBox'); if(!box||!box.offsetParent) return; const top=box.getBoundingClientRect().top+window.scrollY; const nav=window.innerWidth>=1080?20:76;
+  const h=Math.max(380,window.innerHeight-(top-window.scrollY)-nav); box.style.height=h+'px'; if(LMAP) LMAP.invalidateSize(); }
 /* ================= v6: 대시보드 ================= */
 function maxBuy(zone){ let lo=20000, hi=250000; const ok=p=>{ const m=calcMoney(p,false,zone); return m.shortage===0&&m.dsr<=40; };
   if(!ok(lo)) return null; for(let i=0;i<24;i++){ const mid=(lo+hi)/2; if(ok(mid)) lo=mid; else hi=mid; } return Math.floor(lo/500)*500; }
@@ -1408,12 +1462,35 @@ function renderDash(){
       const A=askInfo(k); const ag=A&&A.min!=null?A.min-mine.p:null; tr.appendChild(el('td',ag==null?'mut':(ag-P.g21<=0?'ok':''),ag==null?'—':eok(ag)));
       tr.appendChild(el('td',P.pass?'ok':'bad',P.pass?'통과':(P.short>0?eok(P.short)+' 부족':'DSR '+P.dsr.toFixed(0)+'%')));
       tr.onclick=()=>openUnit(k); tb.appendChild(tr); }); T.appendChild(tb); }
-  // 차트
+  // 차트 (선택 토글)
+  renderDashChart();
+}
+function dashPool(){ const W=watchKeys(); S.dashExtra=(S.dashExtra||[]).filter(k=>CX[k]&&hasData(k)&&!W.includes(k)); return W.filter(k=>hasData(k)).concat(S.dashExtra); }
+function renderDashChart(){
+  const pool=dashPool(), off=new Set(S.dashOff||[]), col=k=>PAL[pool.indexOf(k)%PAL.length];
   const s21=Math.max(0,mIdx('2021-01')), labels=MONTHS.slice(s21);
-  const ser=W.filter(k=>hasData(k)).map((k,i)=>{ const g=gapSer(k); return {name:CX[k].name+' '+CX[k].pt,color:PAL[i%PAL.length],values:g.v.slice(s21),fill:g.f.slice(s21)}; });
+  const ser=pool.filter(k=>!off.has(k)).map(k=>{ const g=gapSer(k); return {name:CX[k].name+' '+CX[k].pt,color:col(k),values:g.v.slice(s21),fill:g.f.slice(s21)}; });
   if(ser.length) lineChart($('chDash'),labels,ser,{h:250,refs:[{y:0,color:'var(--ref)'}],fmt:v=>(v/10000).toFixed(1)+'억',tipFmt:v=>eok(v),xfmt:m=>m.slice(2).replace('-','.'),tipLabel:m=>m.replace('-','.')+' · 현재집 대비',aria:'관심 단지 갭 추이'});
-  else { $('chDash').replaceChildren(el('div','empty','관심 단지를 고르면 갭 추이가 보입니다.')); }
-  const L=$('lgDash'); L.replaceChildren(); ser.forEach(s0=>{ const sp=el('span'); const i=el('i'); i.style.background=s0.color; sp.append(i,document.createTextNode(s0.name)); L.appendChild(sp); });
+  else $('chDash').replaceChildren(el('div','empty',pool.length?'선택된 단지가 없습니다. 아래에서 단지를 켜주세요.':'관심 단지를 고르면 갭 추이가 보입니다.'));
+  // 묶음 선택 버튼
+  const B=$('dashBtns'); B.replaceChildren(); const setOff=a=>{ S.dashOff=a; save(); renderDashChart(); };
+  const only=f=>setOff(pool.filter(k=>!f(k)));
+  const btn=(t,fn,on)=>{ const b=el('button','chip'+(on?' on':''),t); b.onclick=fn; B.appendChild(b); };
+  const isAll=pool.every(k=>!off.has(k)), isNone=pool.every(k=>off.has(k));
+  btn('전체 선택',()=>setOff([]),isAll&&pool.length>0); btn('전체 해제',()=>setOff(pool.slice()),isNone&&pool.length>0);
+  const grpOn=f=>{ const g=pool.filter(f); return g.length>0&&pool.every(k=>f(k)?!off.has(k):off.has(k)); };
+  if(pool.some(k=>!CX[k].thz)&&pool.some(k=>CX[k].thz)){ btn('비규제만',()=>only(k=>!CX[k].thz),grpOn(k=>!CX[k].thz)); btn('토허제만',()=>only(k=>CX[k].thz),grpOn(k=>CX[k].thz)); }
+  const RK=new Set(realList().map(r=>r.k)); if(pool.some(k=>RK.has(k))) btn('현실 후보만',()=>only(k=>RK.has(k)),grpOn(k=>RK.has(k)));
+  const regs=[...new Set(pool.map(k=>(CX[k].region||'').replace(/\(.*\)/,'')))].filter(Boolean);
+  if(regs.length>1) regs.forEach(r=>btn(r,()=>only(k=>(CX[k].region||'').replace(/\(.*\)/,'')===r),grpOn(k=>(CX[k].region||'').replace(/\(.*\)/,'')===r)));
+  // 단지별 토글
+  const C=$('dashChips'); C.replaceChildren();
+  pool.forEach(k=>{ const b=document.createElement('button'); if(off.has(k)) b.classList.add('off'); const i=document.createElement('i'); i.style.background=col(k);
+    b.append(i,document.createTextNode(CX[k].name+' '+CX[k].pt)); b.title=off.has(k)?'눌러서 표시':'눌러서 숨기기';
+    if(S.dashExtra.includes(k)){ const x=el('b',null,'✕'); x.title='목록에서 빼기'; x.onclick=e=>{ e.stopPropagation(); S.dashExtra=S.dashExtra.filter(z=>z!==k); S.dashOff=(S.dashOff||[]).filter(z=>z!==k); save(); renderDashChart(); }; b.appendChild(x); }
+    b.onclick=()=>{ const o=new Set(S.dashOff||[]); if(o.has(k)) o.delete(k); else o.add(k); setOff([...o]); }; C.appendChild(b); });
+  const sl=$('dashAddSel'); sl.replaceChildren(); const o0=document.createElement('option'); o0.value=''; o0.textContent=pool.length>=14?'최대 14곳까지 볼 수 있습니다':'관심 단지 외 다른 단지 추가…'; sl.appendChild(o0);
+  if(pool.length<14) Object.keys(CX).filter(k=>k!==ME&&!pool.includes(k)&&hasData(k)).sort((a,b)=>(CX[a].region||'').localeCompare(CX[b].region||'','ko')||CX[a].name.localeCompare(CX[b].name,'ko')).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=`${CX[k].region||''} · ${CX[k].name} ${CX[k].pt}㎡${CX[k].thz?' (토허)':''}`; sl.appendChild(o); });
 }
 
 /* ================= v6: 단지 탐색 ================= */
@@ -1429,7 +1506,7 @@ function renderUnits(){ const sc=S.uScope||'watch', zn=S.uZone||'all', pt=S.uPt|
   if(zn!=='all') keys=keys.filter(k=>zn==='reg'?CX[k].thz:!CX[k].thz); if(pt!=='all') keys=keys.filter(k=>CX[k].pt===pt);
   const Wk=DATA.commute&&DATA.commute.walk||{};
   const rows=keys.map(k=>{ const c=CX[k], P=hasData(k)?plan21(k):null, gi=gapInfo(k); const need=c.est!=null?calcLoanFor(c.est,zoneOf(k)):null; const A=askInfo(k); const w=Wk[lbl(k)];
-    return {k,name:c.name,est:c.est,ask:A&&A.min!=null?A.min:null,gNow:gi.gNow,g21:gi.g21,rem:P?P.rem:null,P,loan:need?need.loan:null,dsr:need?need.dsr:null,short:need?need.short:0,cm:cmSum(lbl(k),'tr'),st:w?w.st[1]:null,stN:w?w.st[0]:'',v22:(c.vol||{})['2022']??null,star:W.includes(k)?0:1}; });
+    return {k,name:c.name,est:c.est,ask:A&&A.min!=null?A.min:null,gNow:gi.gNow,g21:gi.g21,rem:P?P.rem:null,P,loan:need?need.loan:null,dsr:need?need.dsr:null,short:need?need.short:0,cm:cmSum(lbl(k)),st:w?w.st[1]:null,stN:w?w.st[0]:'',v22:(c.vol||{})['2022']??null,star:W.includes(k)?0:1}; });
   if(!S.uSort||!UCOLS.some(c=>c[0]===S.uSort.k)) S.uSort={k:'rem',d:1}; const {k:sk,d:sd}=S.uSort;
   rows.sort((a,b)=>{ if(sk==='name') return a.name.localeCompare(b.name,'ko')*sd; const x=a[sk],y=b[sk]; if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return (x-y)*sd; });
   $('uCount').textContent=rows.length+'곳';
@@ -1502,8 +1579,9 @@ function openUnit(k){ if(!CX[k]) return; S.dSel=k; const c=CX[k], L=lbl(k), P=ha
   const sb=el('button','btn sm'+(on?'':' pri'),on?'★ 관심 해제':'☆ 관심 추가'); sb.onclick=()=>{ toggleWatch(k); openUnit(k); };
   const inReal=realList().some(r=>r.k===k); const rb=el('button','btn sm',inReal?'현실 후보 보기':'현실 후보에 추가'); rb.onclick=()=>{ if(!inReal){ S.real.push({k,ask:c.est,date:new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})}); save(); toast('현실 후보에 추가했습니다'); } S.realSel=k; save(); closeUnit(); go('p-real'); };
   const gb=el('button','btn sm','비교 차트'); gb.onclick=()=>{ S.gapSel=k; S.gapView='one'; S.uView='chart'; save(); closeUnit(); go('p-gap'); };
-  const lk=el('a','btn sm','네이버부동산 ↗'); lk.href=LINKS.naver(c.name); lk.target='_blank'; lk.rel='noopener';
-  act.append(sb,rb,gb,lk); bd.appendChild(act);
+  const lk=el('a','btn sm'+(naverSaved(k)?' pri':''),'네이버부동산 ↗'); lk.href=naverUrl(k); lk.target='_blank'; lk.rel='noopener';
+  const lkc=el('button','btn sm',naverSaved(k)?'🔗 연결됨':'🔗 단지 연결'); act.append(sb,rb,gb,lk,lkc); bd.appendChild(act);
+  const nb=el('div','card'); nb.style.padding='10px 14px'; nb.hidden=true; nb.appendChild(naverBox(k,()=>openUnit(k))); bd.appendChild(nb); lkc.onclick=()=>{ nb.hidden=!nb.hidden; if(!nb.hidden) nb.querySelector('input').focus(); };
   // 차트
   const cc=el('div','card'); const ch=el('div','ch'); ch.appendChild(el('h3',null,'추이 (2019~)')); const sg=el('div','seg sm'); sg.style.margin='0';
   [['gap','현재집과 갭'],['price','실거래가']].forEach(([v,tx])=>{ const b=el('button',(S.dMet||'gap')===v?'on':'',tx); b.onclick=()=>{ S.dMet=v; save(); openUnit(k); }; sg.appendChild(b); }); ch.appendChild(sg); cc.appendChild(ch);
@@ -1725,12 +1803,13 @@ numF.forEach(k=>{const i=$('in-'+k); i.addEventListener('input',()=>{const v=par
 [['segUScope','uScope'],['segUZone','uZone'],['segUPt','uPt']].forEach(([id,k])=>[...$(id).children].forEach(b=>b.onclick=()=>{S[k]=b.dataset.v; save(); renderUnits();}));
 $('gapSelSel').onchange=e=>{ S.gapSel=e.target.value; save(); renderCmp(); };
 [...$('segMoneyTop').children].forEach(b=>b.onclick=()=>{ const v=b.dataset.v; if(v==='money') return; go('p-plan'); [...$('segPlan').children].forEach(x=>x.classList.toggle('on',x.dataset.v===v)); ['plans','tax','check'].forEach(x=>$('v-'+x).hidden=x!==v); });
+$('dashAdd').onclick=()=>{ const k=$('dashAddSel').value; if(!k) return; S.dashExtra=(S.dashExtra||[]).concat(k); save(); renderDashChart(); };
 $('unitDrawer').addEventListener('click',e=>{ if(e.target.id==='unitDrawer') closeUnit(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('unitDrawer').hidden) closeUnit(); });
 [...$('segMetric').children].forEach(b=>b.onclick=()=>{S.gapMetric=b.dataset.v; save(); renderCmp();});
 $('cmpAdd').onclick=()=>{ const k=$('cmpAddSel').value; if(!k) return; S.cmpExtra=(S.cmpExtra||[]).concat(k); save(); renderCmp(); };
 [...$('segPeriod').children].forEach(b=>b.onclick=()=>{S.gapPeriod=b.dataset.v; save(); renderCmp();});
-[['segCmScope','cmScope'],['segCmMode','cmMode'],['segCmWork','cmWork']].forEach(([id,k])=>[...$(id).children].forEach(b=>b.onclick=()=>{S[k]=b.dataset.v; save(); renderCommute(); renderHome(); renderGap();}));
+[['segCmScope','cmScope'],['segCmScen','cmScen'],['segCmCar','cmCarT'],['segCmWork','cmWork']].forEach(([id,k])=>[...$(id).children].forEach(b=>b.onclick=()=>{ if(k==='cmScen') S.cmSort={k:b.dataset.v,d:1}; S[k]=b.dataset.v; save(); renderCommute(); renderHome(); renderGap();}));
 document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{ go('p-plan'); const v=b.dataset.open; [...$('segPlan').children].forEach(x=>x.classList.toggle('on',x.dataset.v===v)); ['plans','tax','check'].forEach(x=>$('v-'+x).hidden=x!==v); }));
 [...$('segSrc').children].forEach(b=>b.onclick=()=>{S.src=b.dataset.src; save(); renderMoney(); renderHome();});
 [...$('segPlan').children].forEach(b=>b.onclick=()=>{ if(b.dataset.v==='money'){ go('p-money'); return; } [...$('segPlan').children].forEach(x=>x.classList.toggle('on',x===b)); ['plans','tax','check'].forEach(v=>$('v-'+v).hidden=v!==b.dataset.v);});
@@ -1750,7 +1829,7 @@ mqLight.addEventListener('change',()=>{ if((S.theme||'auto')==='auto') applyThem
 applyTheme();
 $('btnAddTodo').onclick=()=>{const v=$('in-newTodo').value.trim(); if(!v) return; S.todos.push({id:'u'+Date.now(),t:v}); $('in-newTodo').value=''; save(); renderAll();};
 $('shareBtn').onclick=async()=>{ const u=location.href.split('#')[0]; try{ if(navigator.share) await navigator.share({title:'갈아타기 전략 노트',url:u}); else {await navigator.clipboard.writeText(u); toast('링크를 복사했습니다');} }catch(e){} };
-let rT; window.addEventListener('resize',()=>{clearTimeout(rT); rT=setTimeout(()=>{renderSell(); renderGap(); renderDash();},200);});
+let rT; window.addEventListener('resize',()=>{clearTimeout(rT); rT=setTimeout(()=>{renderSell(); if((S.uView||'table')==='map') fitMapBox(); else renderGap(); renderDash();},200);});
 renderAll();
 loadData();
 if(S.src==='sheet'&&S.sheetUrl&&navigator.onLine) syncSheet();
