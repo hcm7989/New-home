@@ -362,6 +362,11 @@ html[data-theme=dark] #mapBox .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 .asklist .ai{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:12.5px}
 .asklist .ai b{font-size:13.5px}.asklist .ai.old{opacity:.5}.asklist .aiact{margin-left:auto;display:flex;gap:4px}
 .ph .askbar{margin:0}
+.syncst{font-size:12px;font-weight:650;color:var(--mut);background:var(--panel2);border-radius:6px;padding:2px 8px}
+.syncst.ok{color:var(--ok);background:var(--okbg)}.syncst.bad{color:var(--bad)}.syncst.wait{color:var(--warn);background:var(--wbg)}
+label.f>span:first-child .mut{display:block;font-size:12px;margin-top:1px}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--line2);display:inline-block}
+.sdot.ok{background:var(--ok)}.sdot.bad{background:var(--bad)}.sdot.wait{background:var(--warn)}
 .wc{padding:10px 0;border-bottom:1px solid var(--line)}.wc:last-child{border-bottom:0}
 .wc .wt{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .wc .wn{font-weight:700;font-size:14px}.wc .wn small{font-weight:500;color:var(--mut);font-size:11.5px;margin-left:5px}
@@ -470,7 +475,7 @@ tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
 <div class="mainCol">
 <header class="top"><div class="in">
   <span class="brand hide-d"><span class="logo"><svg><use href="#i-home"/></svg></span></span>
-  <div class="ttl"><h1><span id="pgTitle">대시보드</span><span class="ver">v6</span></h1><div class="d" id="hdrDate">—</div></div>
+  <div class="ttl"><h1><span id="pgTitle">대시보드</span><span class="ver">v6</span><span class="sdot" id="syncDot" title="동기화 꺼짐"></span></h1><div class="d" id="hdrDate">—</div></div>
   <div class="hbtns"><label class="ibtn" for="askFile" title="네이버 호가 캡처 넣기"><svg class="ic"><use href="#i-cam"/></svg><span class="hide-m">호가 캡처</span></label><button class="ibtn" id="themeBtn" aria-label="화면 모드 바꾸기">자동</button><button class="ibtn" id="shareBtn" aria-label="공유"><svg class="ic"><use href="#i-share"/></svg></button></div>
 </div></header>
 <input type="file" id="askFile" accept="image/*" multiple hidden>
@@ -632,12 +637,7 @@ tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
       <details style="margin-top:6px"><summary>시트 연결 방법 (‘Portfolio’ 탭 L16 즉시 가용 자산)</summary><div class="note">
         <b>권장 · 시트는 비공개로 두고 L16 숫자 하나만 내보내기</b><br>
         ① ‘2026 주식 포트폴리오 통합본’ → 확장 프로그램 → <b>Apps Script</b><br>
-        ② 기존 내용을 지우고 아래 코드 붙여넣기 → 저장<br>
-        <code style="display:block;white-space:pre-wrap;font-size:11.5px;margin:6px 0;padding:8px;border-radius:8px;background:var(--panel2)">function doGet() {
-  const v = SpreadsheetApp.getActive().getSheetByName('Portfolio').getRange('L16').getValue();
-  return ContentService.createTextOutput(JSON.stringify({ cash: v, asof: Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd') }))
-    .setMimeType(ContentService.MimeType.JSON);
-}</code>
+        ② 기존 내용을 지우고 <b>더보기 → PC · 휴대폰 동기화</b> 화면의 코드를 붙여넣기 → 저장 (L16 불러오기 + 기기 간 동기화가 함께 들어 있습니다)
         ③ 배포 → <b>새 배포</b> → 유형: 웹 앱 → 실행: <b>나</b> · 액세스: <b>모든 사용자</b> → 배포 → 권한 허용<br>
         ④ 나온 <b>웹 앱 URL</b>(…/exec)을 위 칸에 붙여넣고 ‘불러오기’.<br>
         이 주소로는 L16 숫자 하나만 보이고 시트 내용은 공개되지 않습니다. 앱을 열 때마다 자동으로 새 값을 읽습니다.<br>
@@ -788,6 +788,23 @@ tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
     <h3>전략 타임라인</h3>
     <div class="tl" id="timeline"></div>
   </div></div>
+  <div class="card" id="syncCard">
+    <div class="ch"><h3>PC · 휴대폰 동기화</h3><span class="syncst" id="syncState">—</span></div>
+    <p class="sub" style="margin-bottom:8px">자금 설정 · 호가 캡처(원본 이미지 포함) · 관심 단지 · 현실 후보 · 메모 · 체크리스트를 내 구글 시트(숨김 탭 <b>NewHome_Sync</b>)와 구글 드라이브(<b>NewHome_캡처</b> 폴더)에 저장해 모든 기기에서 같이 씁니다. 화면 모드처럼 기기마다 다른 설정은 그대로 둡니다.</p>
+    <label class="f"><span>동기화 켜기</span><input type="checkbox" id="in-syncOn"></label>
+    <label class="f"><span>동기화 코드<span class="mut">모든 기기에 같은 코드를 넣어야 합니다</span></span><span><input type="text" id="in-syncTok" style="width:11em;text-align:left;font-family:ui-monospace,monospace"><button class="btn sm" id="btnSyncTokNew" style="margin-left:6px">새로 만들기</button></span></label>
+    <label class="f" style="flex-wrap:wrap"><span>Apps Script 웹 앱 주소<span class="mut">‘자금’의 시트 연동 주소와 같은 주소</span></span><input type="url" id="in-syncUrl" class="wide" placeholder="https://script.google.com/macros/s/…/exec"></label>
+    <div class="btns" style="margin-top:10px"><button class="btn pri" id="btnSyncNow">지금 동기화</button><button class="btn" id="btnBackupOut">백업 파일 저장</button><label class="btn" for="backupIn">백업 불러오기</label><input type="file" id="backupIn" accept=".json,application/json" hidden></div>
+    <details style="margin-top:10px"><summary>처음 한 번 설정하기 (PC에서)</summary><div class="note" style="font-size:12.5px;line-height:1.7">
+      ① ‘2026 주식 포트폴리오 통합본’ 시트 → 확장 프로그램 → <b>Apps Script</b><br>
+      ② 기존 코드를 모두 지우고 아래 코드를 붙여넣기 → 저장 (즉시가용 자산 L16 불러오기 기능도 그대로 들어 있습니다)
+      <textarea id="syncCode" readonly style="width:100%;height:150px;margin:6px 0;font:11px/1.45 ui-monospace,monospace;text-align:left"></textarea>
+      <button class="btn sm" id="btnCopyCode">코드 복사</button><br>
+      ③ <b>배포 → 배포 관리 → 연필(수정) → 버전: 새 버전 → 배포</b> (주소가 그대로 유지됩니다). 처음 배포라면 ‘새 배포 → 웹 앱 · 실행: 나 · 액세스: 모든 사용자’. 드라이브 권한을 묻으면 허용<br>
+      ④ 웹 앱 주소를 위 칸에 넣고 ‘동기화 켜기’ → ‘지금 동기화’<br>
+      ⑤ <b>휴대폰</b>: 앱의 더보기 → 이 화면에서 같은 <b>동기화 코드</b>와 <b>웹 앱 주소</b>를 넣고 ‘동기화 켜기’ (PC의 코드는 위 칸에서 복사해 카톡 등으로 보내면 편합니다)<br>
+      동기화 코드는 비밀번호 역할입니다. 코드를 모르면 주소만으로는 데이터를 읽거나 바꿀 수 없습니다.</div></details>
+  </div>
 </section>
 </main>
 </div></div>
@@ -854,7 +871,7 @@ function load(){
   }
   const o=Object.assign({},DEF,s); if(o.gapPeriod==='2019') o.gapPeriod='2021'; if(/^\d{4}$/.test(String(o.when))) o.when={2026:'2026-12',2027:'2027-12',2028:'2028-02'}[o.when]||'2027-12'; return o;
 }
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} if(window.SYNC&&!SYNC.mute) schedulePush(); }
 
 /* ================= 유틸 ================= */
 const $=id=>document.getElementById(id);
@@ -1320,7 +1337,7 @@ const IDB={ db:null, async open(){ if(this.db) return this.db; this.db=await new
 async function shrinkImage(file){ const url=URL.createObjectURL(file); const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
   const sc=Math.min(1,900/img.width), cv=document.createElement('canvas'); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc); cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height); URL.revokeObjectURL(url);
   return await new Promise(r=>cv.toBlob(r,'image/jpeg',0.8)); }
-async function showAskImg(id,title){ try{ const b=await IDB.get(id); if(!b){ toast('저장된 캡처가 없습니다'); return; } const u=URL.createObjectURL(b); $('imgView').src=u; $('imgTitle').textContent=title; $('imgSheet').hidden=false; }catch(e){ toast('캡처를 열 수 없습니다'); } }
+async function showAskImg(id,title){ try{ let b=await IDB.get(id); if(!b&&syncReady()){ toast('다른 기기의 캡처를 불러오는 중…'); b=await syncImgDown(id); } if(!b){ toast('저장된 캡처가 없습니다'); return; } const u=URL.createObjectURL(b); $('imgView').src=u; $('imgTitle').textContent=title; $('imgSheet').hidden=false; }catch(e){ toast('캡처를 열 수 없습니다'); } }
 const ASK_DAYS=30;
 function asksOf(k){ S.asks=S.asks||{}; return S.asks[k]||[]; }
 function askInfo(k){ const all=asksOf(k); if(!all.length) return null; const now=Date.now();
@@ -1329,7 +1346,7 @@ function askInfo(k){ const all=asksOf(k); if(!all.length) return null; const now
   return {list,min:fresh[0].p,minE:fresh[0],old:list.length-fresh.length}; }
 function myAsk(){ const A=askInfo(ME); return A&&A.min!=null?{p:A.min,src:'덕소 호가 캡처'}:{p:S.sell,src:'내 자금 매도가'}; }
 const confirmDel=e=>true;
-function delAsk(k,id){ IDB.del(id).catch(()=>{}); S.asks[k]=asksOf(k).filter(e=>e.id!==id); if(!S.asks[k].length) delete S.asks[k]; save(); renderGap(); renderHome(); renderAsk(); toast('호가를 삭제했습니다'); }
+function delAsk(k,id){ IDB.del(id).catch(()=>{}); if(syncReady()) syncPost({action:'delimg',id}).catch(()=>{}); S.asks[k]=asksOf(k).filter(e=>e.id!==id); if(!S.asks[k].length) delete S.asks[k]; save(); renderGap(); renderHome(); renderAsk(); toast('호가를 삭제했습니다'); }
 const nName=s=>(s||'').replace(/\s+/g,'').replace(/[@6]편한/g,'e편한').replace(/이편한/g,'e편한').replace(/e-편한/gi,'e편한').replace(/\(.*?\)/g,'').replace(/아파트$/,'').toLowerCase();
 const bigr=s=>{const a=[]; for(let i=0;i<s.length-1;i++) a.push(s.slice(i,i+2)); return a;};
 function dice(a,b){ const A=bigr(a),B=bigr(b); if(!A.length||!B.length) return 0; const m=new Map(); A.forEach(x=>m.set(x,(m.get(x)||0)+1)); let c=0; B.forEach(x=>{const v=m.get(x); if(v){c++;m.set(x,v-1);}}); return 2*c/(A.length+B.length); }
@@ -1421,7 +1438,7 @@ function saveAsk(){ if($('ask-kind').value==='bun') return saveBun(); const l=$(
   if(!l){ toast('단지를 골라주세요'); return; } if(!(p>=3000)){ toast('호가를 확인해주세요'); return; }
   const k=l===lbl(ME)?ME:l+'|'+pt; if(!CX[k]){ toast('이 단지에는 '+pt+'㎡ 데이터가 없습니다'); return; }
   S.asks=S.asks||{}; const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),p,floor:$('ask-floor').value.trim(),dong:$('ask-dong').value.trim(),date:$('ask-date').value,owner:$('ask-owner').checked};
-  const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b)).catch(()=>{ e.img=false; save(); }); }
+  const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b).then(()=>syncImgUp(e.id,b))).catch(()=>{ e.img=false; save(); }); }
   const dup=asksOf(k).filter(x=>x.p===e.p&&x.floor===e.floor&&x.dong===e.dong); dup.forEach(x=>IDB.del(x.id).catch(()=>{}));
   const L=asksOf(k).filter(x=>!(x.p===e.p&&x.floor===e.floor&&x.dong===e.dong)); L.push(e); S.asks[k]=L;
   if(k!==ME){ const w=watchKeys(); if(!w.includes(k)&&w.length<WATCH_MAX) S.watch=w.concat(k); }
@@ -1430,7 +1447,7 @@ function saveBun(){ const nm=$('ask-bname').value.trim(), pt=$('ask-pt').value, 
   if(!nm){ toast('분양권 단지명을 넣어주세요'); return; } if(!(p>=3000)){ toast('매매가를 확인해주세요'); return; }
   const k='B:'+nm+'|'+pt; S.asks=S.asks||{};
   const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),p,bun:true,btype:$('ask-btype').value,bp:+$('ask-bp').value||null,prem:+$('ask-prem').value||0,opt:+$('ask-opt').value||0,utype:$('ask-utype').value.trim(),floor:$('ask-floor').value.trim(),dong:$('ask-dong').value.trim(),date:$('ask-date').value,owner:$('ask-owner').checked};
-  const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b)).catch(()=>{}); }
+  const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b).then(()=>syncImgUp(e.id,b))).catch(()=>{}); }
   const old=asksOf(k).filter(x=>x.p===e.p&&x.floor===e.floor&&x.dong===e.dong); old.forEach(x=>IDB.del(x.id).catch(()=>{}));
   S.asks[k]=asksOf(k).filter(x=>!old.includes(x)).concat(e); save(); toast(`분양권 ${nm} ${eok(p)} 저장`); ASKQ.i++; renderGap(); renderPlans(); renderAsk(); showAsk(); }
 function bunGroups(){ S.asks=S.asks||{}; return Object.keys(S.asks).filter(k=>k.startsWith('B:')).map(k=>{ const [nm,pt]=k.slice(2).split('|'); const A=askInfo(k); return {k,nm,pt,A}; }).filter(g=>g.A); }
@@ -1503,6 +1520,69 @@ function renderAsk(){ if(!$('askTable')) return; S.asks=S.asks||{}; const sc=S.a
         const x=el('button','btn sm','삭제'); x.onclick=ev=>{ ev.stopPropagation(); if(confirm(`${r.c.name} ${eok(e.p)} 호가를 삭제할까요?`)) delAsk(r.k,e.id); }; bx.appendChild(x); it.appendChild(bx); ul.appendChild(it); });
       td.appendChild(ul); t2.appendChild(td); tb.appendChild(t2); } });
   T.appendChild(tb); renderBun(); }
+/* ================= v6: 기기 간 동기화 (구글 Apps Script) ================= */
+const SYNC_LOCAL=new Set(['theme','uView','gapView','gapMetric','gapPeriod','mapScope','dSel','askOpen','cmSel','realSel','dMet','syncOn','syncTok','syncTs','syncHash','sheetUrl','src','uScope','uZone','uPt','uSort','askScope']);
+var SYNC={timer:null,busy:false,mute:false,lastMsg:""};
+function syncSubset(){ const o={}; Object.keys(S).forEach(k=>{ if(!SYNC_LOCAL.has(k)) o[k]=S[k]; }); return o; }
+function syncReady(){ return !!(S.syncOn&&S.syncTok&&/^https:\/\/script\.google\.com\//.test(S.sheetUrl||'')); }
+function syncStatus(t,cls){ SYNC.lastMsg=t; const e=$('syncState'); if(e){ e.textContent=t; e.className='syncst '+(cls||''); } const d=$('syncDot'); if(d){ d.className='sdot '+(cls||''); d.title=t; } }
+function newToken(){ const a=new Uint8Array(12); crypto.getRandomValues(a); return [...a].map(b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join(''); }
+function syncScript(tok){ return `// 갈아타기 전략 노트 · Apps Script (즉시가용 자산 + 기기 간 동기화)
+const TOKEN='${tok}';           // 앱의 동기화 코드와 같아야 합니다
+const TAB='NewHome_Sync', FOLDER='NewHome_캡처';
+function out_(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+function sheet_(){ const ss=SpreadsheetApp.getActive(); let sh=ss.getSheetByName(TAB); if(!sh){ sh=ss.insertSheet(TAB); sh.hideSheet(); } return sh; }
+function read_(){ const sh=sheet_(); const h=sh.getRange('A1:C1').getValues()[0]; const n=+h[2]||0; if(!n) return {ts:0,state:null};
+  return {ts:+h[1]||0, state:JSON.parse(sh.getRange(2,1,n,1).getValues().map(r=>r[0]).join(''))}; }
+function write_(state,ts){ const sh=sheet_(), s=JSON.stringify(state), parts=[]; for(let i=0;i<s.length;i+=40000) parts.push([s.slice(i,i+40000)]);
+  sh.getRange('A2:A').clearContent(); if(parts.length) sh.getRange(2,1,parts.length,1).setValues(parts); sh.getRange('A1:C1').setValues([['NewHome sync',ts,parts.length]]); }
+function folder_(){ const it=DriveApp.getFoldersByName(FOLDER); return it.hasNext()?it.next():DriveApp.createFolder(FOLDER); }
+function doGet(e){ const p=(e&&e.parameter)||{};
+  if(!p.action){ const v=SpreadsheetApp.getActive().getSheetByName('Portfolio').getRange('L16').getValue();
+    return out_({cash:v, asof:Utilities.formatDate(new Date(),'Asia/Seoul','yyyy-MM-dd')}); }
+  if(p.token!==TOKEN) return out_({error:'token'});
+  if(p.action==='get') return out_(read_());
+  if(p.action==='img'){ const it=folder_().getFilesByName(p.id+'.jpg'); if(!it.hasNext()) return out_({error:'none'});
+    return out_({data:Utilities.base64Encode(it.next().getBlob().getBytes())}); }
+  return out_({error:'action'}); }
+function doPost(e){ const b=JSON.parse((e&&e.postData&&e.postData.contents)||'{}'); if(b.token!==TOKEN) return out_({error:'token'});
+  const lock=LockService.getScriptLock(); lock.waitLock(20000);
+  try{
+    if(b.action==='put'){ const cur=read_(); if(cur.ts>b.ts) return out_({ok:false,newer:true,ts:cur.ts,state:cur.state}); write_(b.state,b.ts); return out_({ok:true,ts:b.ts}); }
+    if(b.action==='img'){ const fo=folder_(), old=fo.getFilesByName(b.id+'.jpg'); while(old.hasNext()) old.next().setTrashed(true);
+      fo.createFile(Utilities.newBlob(Utilities.base64Decode(b.data),'image/jpeg',b.id+'.jpg')); return out_({ok:true}); }
+    if(b.action==='delimg'){ const it=folder_().getFilesByName(b.id+'.jpg'); while(it.hasNext()) it.next().setTrashed(true); return out_({ok:true}); }
+  } finally { lock.releaseLock(); }
+  return out_({error:'action'}); }`; }
+async function syncPost(body){ const r=await fetch(S.sheetUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({token:S.syncTok},body)),redirect:'follow'}); if(!r.ok) throw new Error('HTTP '+r.status); const j=await r.json(); if(j.error) throw new Error(j.error==='token'?'동기화 코드가 Apps Script와 다릅니다':j.error); return j; }
+async function syncGet(params){ const u=S.sheetUrl+(S.sheetUrl.includes('?')?'&':'?')+new URLSearchParams(Object.assign({token:S.syncTok,t:Date.now()},params)); const r=await fetch(u,{cache:'no-store',redirect:'follow'}); if(!r.ok) throw new Error('HTTP '+r.status);
+  const j=await r.json(); if(j.error) throw new Error(j.error==='token'?'동기화 코드가 Apps Script와 다릅니다':j.error==='action'?'Apps Script가 예전 코드입니다 (새 코드로 바꾸고 새 버전 배포)':j.error); if(j.cash!==undefined&&params.action) throw new Error('Apps Script가 예전 코드입니다 (새 코드로 바꾸고 새 버전 배포)'); return j; }
+function applyRemote(st,ts){ SYNC.mute=true; const keep={}; SYNC_LOCAL.forEach(k=>{ if(k in S) keep[k]=S[k]; });
+  Object.keys(S).forEach(k=>{ if(!SYNC_LOCAL.has(k)) delete S[k]; }); Object.assign(S,DEF?JSON.parse(JSON.stringify(DEF)):{},st,keep); S.syncTs=ts; S.syncHash=JSON.stringify(syncSubset()); save(); SYNC.mute=false; renderAll(); }
+async function syncPull(silent){ if(!syncReady()||SYNC.busy||!navigator.onLine) return; SYNC.busy=true; syncStatus('확인 중…','wait');
+  try{ const r=await syncGet({action:'get'}); const localHash=JSON.stringify(syncSubset()), dirty=localHash!==S.syncHash;
+    if(r.state&&r.ts>(S.syncTs||0)){ applyRemote(r.state,r.ts); if(!silent) toast('다른 기기의 변경사항을 반영했습니다'); syncStatus('최신 상태 · '+fmtTs(r.ts),'ok'); }
+    else if(!r.state||dirty){ SYNC.busy=false; await syncPush(true); return; }
+    else syncStatus('최신 상태 · '+fmtTs(S.syncTs),'ok');
+  }catch(e){ syncStatus('동기화 실패: '+e.message,'bad'); } SYNC.busy=false; }
+async function syncPush(force){ if(!syncReady()||!navigator.onLine) return; const sub=syncSubset(), h=JSON.stringify(sub); if(!force&&h===S.syncHash) return;
+  if(SYNC.busy){ schedulePush(); return; } SYNC.busy=true; syncStatus('저장 중…','wait'); const ts=Date.now();
+  try{ const r=await syncPost({action:'put',state:sub,ts}); if(r.ok){ SYNC.mute=true; S.syncTs=ts; S.syncHash=h; save(); SYNC.mute=false; syncStatus('저장됨 · '+fmtTs(ts),'ok'); }
+    else if(r.newer){ applyRemote(r.state,r.ts); toast('다른 기기에서 더 최근에 바뀐 내용으로 맞췄습니다'); syncStatus('최신 상태 · '+fmtTs(r.ts),'ok'); }
+  }catch(e){ syncStatus('동기화 실패: '+e.message,'bad'); } SYNC.busy=false; }
+function schedulePush(){ if(!syncReady()) return; clearTimeout(SYNC.timer); SYNC.timer=setTimeout(()=>syncPush(false),1500); }
+const fmtTs=ts=>ts?new Date(ts).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+const blobB64=b=>new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]); r.onerror=rej; r.readAsDataURL(b); });
+async function syncImgUp(id,blob){ if(!syncReady()) return; try{ await syncPost({action:'img',id,data:await blobB64(blob)}); }catch(e){ syncStatus('캡처 업로드 실패: '+e.message,'bad'); } }
+async function syncImgDown(id){ if(!syncReady()) return null; try{ const r=await syncGet({action:'img',id}); if(!r.data) return null; const bin=atob(r.data), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); const b=new Blob([u],{type:'image/jpeg'}); IDB.put(id,b).catch(()=>{}); return b; }catch(e){ return null; } }
+function renderSyncCard(){ if(!$('syncCard')) return; if(!S.syncTok){ S.syncTok=newToken(); save(); }
+  $('in-syncTok').value=S.syncTok; $('in-syncUrl').value=S.sheetUrl||''; $('in-syncOn').checked=!!S.syncOn; $('syncCode').value=syncScript(S.syncTok);
+  if(!S.syncOn) syncStatus('꺼짐 · 이 기기에만 저장 중',''); else if(!syncReady()) syncStatus('웹 앱 주소(script.google.com/…/exec)를 넣어주세요','bad'); else if(!SYNC.lastMsg) syncStatus('최근 동기화 '+fmtTs(S.syncTs),'ok'); else syncStatus(SYNC.lastMsg,$('syncState').className.replace('syncst','').trim()); }
+function exportBackup(){ const data={app:'newhome',ver:6,at:new Date().toISOString(),state:S}; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:'application/json'}));
+  a.download='갈아타기_백업_'+new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})+'.json'; document.body.appendChild(a); a.click(); a.remove(); toast('백업 파일을 저장했습니다 (캡처 이미지는 제외)'); }
+async function importBackup(f){ try{ const j=JSON.parse(await f.text()); const st=j.state||j; if(!st||typeof st!=='object'||!('cash' in st)) throw 0;
+  if(!confirm('백업 파일의 설정으로 바꿀까요? 지금 이 기기의 설정은 덮어씁니다.')) return; const keep={}; ['syncOn','syncTok','sheetUrl','theme'].forEach(k=>{ if(k in S) keep[k]=S[k]; });
+  Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,st,keep); S.syncHash=''; save(); renderAll(); renderSyncCard(); toast('백업을 불러왔습니다'); }catch(e){ toast('백업 파일을 읽을 수 없습니다'); } }
 /* ================= v6: 지도 크기 ================= */
 function fitMapBox(){ const box=$('mapBox'); if(!box||!box.offsetParent) return; const top=box.getBoundingClientRect().top+window.scrollY; const nav=window.innerWidth>=1080?20:76;
   const h=Math.max(380,window.innerHeight-(top-window.scrollY)-nav); box.style.height=h+'px'; if(LMAP) LMAP.invalidateSize(); }
@@ -1861,7 +1941,7 @@ function go(id){ if(!$('unitDrawer').hidden) closeUnit(); document.querySelector
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===tabId));
   document.querySelectorAll('aside nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===sideId));
   $('pgTitle').textContent=PG_T[id]||''; window.scrollTo(0,0);
-  if(id==='p-home') renderDash(); if(id==='p-sell') renderSell(); if(id==='p-commute') renderCommute(); if(id==='p-real') renderReal(); if(id==='p-gap') renderGap(); if(id==='p-ask') renderAsk(); }
+  if(id==='p-home') renderDash(); if(id==='p-sell') renderSell(); if(id==='p-commute') renderCommute(); if(id==='p-real') renderReal(); if(id==='p-gap') renderGap(); if(id==='p-ask') renderAsk(); if(id==='p-more') renderSyncCard(); }
 
 const numF=['cash','pension','retire','save','sell','debt','buy','rate','stress','term','income','other','trigger','live'];
 numF.forEach(k=>{const i=$('in-'+k); i.addEventListener('input',()=>{const v=parseFloat(i.value); if(!isNaN(v)){S[k]=v; if(k==='cash') S.cashAsof='직접 수정'; save(); renderHome(); renderMoney(); renderPlans(); renderTax(); if(k==='trigger') renderSell();}});});
@@ -1905,6 +1985,16 @@ renderAll();
 loadData();
 if(S.src==='sheet'&&S.sheetUrl&&navigator.onLine) syncSheet();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+renderSyncCard(); if(syncReady()) syncPull(true);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&syncReady()) syncPull(false); });
+window.addEventListener('online',()=>{ if(syncReady()) syncPull(true); });
+$('in-syncOn').onchange=e=>{ S.syncOn=e.target.checked; S.syncHash=''; save(); renderSyncCard(); if(syncReady()) syncPull(false); };
+$('in-syncTok').onchange=e=>{ S.syncTok=e.target.value.trim(); S.syncTs=0; S.syncHash=''; save(); renderSyncCard(); };
+$('btnSyncTokNew').onclick=()=>{ if(S.syncOn&&!confirm('새 코드를 만들면 Apps Script 코드도 다시 붙여넣고 배포해야 합니다. 계속할까요?')) return; S.syncTok=newToken(); S.syncTs=0; S.syncHash=''; save(); renderSyncCard(); };
+$('in-syncUrl').onchange=e=>{ S.sheetUrl=e.target.value.trim(); if($('in-sheetUrl')) $('in-sheetUrl').value=S.sheetUrl; S.syncTs=0; save(); renderSyncCard(); };
+$('btnSyncNow').onclick=()=>{ if(!S.syncOn){ toast('먼저 ‘동기화 켜기’를 체크해주세요'); return; } if(!syncReady()){ toast('웹 앱 주소를 확인해주세요'); return; } syncPull(false); };
+$('btnCopyCode').onclick=async()=>{ try{ await navigator.clipboard.writeText($('syncCode').value); toast('코드를 복사했습니다'); }catch(e){ $('syncCode').select(); toast('Ctrl+C로 복사해주세요'); } };
+$('btnBackupOut').onclick=exportBackup; $('backupIn').onchange=e=>{ const f=e.target.files[0]; if(f) importBackup(f); e.target.value=''; };
 </script>
 </body>
 </html>
