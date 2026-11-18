@@ -797,7 +797,7 @@ tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
     <div class="btns" style="margin-top:10px"><button class="btn pri" id="btnSyncNow">지금 동기화</button><button class="btn" id="btnBackupOut">백업 파일 저장</button><label class="btn" for="backupIn">백업 불러오기</label><input type="file" id="backupIn" accept=".json,application/json" hidden></div>
     <details style="margin-top:10px"><summary>처음 한 번 설정하기 (PC에서)</summary><div class="note" style="font-size:12.5px;line-height:1.7">
       ① ‘2026 주식 포트폴리오 통합본’ 시트 → 확장 프로그램 → <b>Apps Script</b><br>
-      ② 기존 코드를 모두 지우고 아래 코드를 붙여넣기 → 저장 (즉시가용 자산 L16 불러오기 기능도 그대로 들어 있습니다)
+      ② 왼쪽 ‘파일’ 옆 <b>＋ → 스크립트</b>로 새 파일 <b>NewHome</b>을 만들고 아래 코드를 붙여넣기 → 저장. 다른 파일에 예전 L16용 <b>function doGet</b>이 있으면 그 함수만 지우기 (즉시가용 자산 L16 불러오기는 이 코드에 들어 있습니다)
       <textarea id="syncCode" readonly style="width:100%;height:150px;margin:6px 0;font:11px/1.45 ui-monospace,monospace;text-align:left"></textarea>
       <button class="btn sm" id="btnCopyCode">코드 복사</button><br>
       ③ <b>배포 → 배포 관리 → 연필(수정) → 버전: 새 버전 → 배포</b> (주소가 그대로 유지됩니다). 처음 배포라면 ‘새 배포 → 웹 앱 · 실행: 나 · 액세스: 모든 사용자’. 드라이브 권한을 묻으면 허용<br>
@@ -1527,33 +1527,33 @@ function syncSubset(){ const o={}; Object.keys(S).forEach(k=>{ if(!SYNC_LOCAL.ha
 function syncReady(){ return !!(S.syncOn&&S.syncTok&&/^https:\/\/script\.google\.com\//.test(S.sheetUrl||'')); }
 function syncStatus(t,cls){ SYNC.lastMsg=t; const e=$('syncState'); if(e){ e.textContent=t; e.className='syncst '+(cls||''); } const d=$('syncDot'); if(d){ d.className='sdot '+(cls||''); d.title=t; } }
 function newToken(){ const a=new Uint8Array(12); crypto.getRandomValues(a); return [...a].map(b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join(''); }
-function syncScript(tok){ return `// 갈아타기 전략 노트 · Apps Script (즉시가용 자산 + 기기 간 동기화)
-const TOKEN='${tok}';           // 앱의 동기화 코드와 같아야 합니다
-const TAB='NewHome_Sync', FOLDER='NewHome_캡처';
-function out_(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
-function sheet_(){ const ss=SpreadsheetApp.getActive(); let sh=ss.getSheetByName(TAB); if(!sh){ sh=ss.insertSheet(TAB); sh.hideSheet(); } return sh; }
-function read_(){ const sh=sheet_(); const h=sh.getRange('A1:C1').getValues()[0]; const n=+h[2]||0; if(!n) return {ts:0,state:null};
+function syncScript(tok){ return `// 갈아타기 전략 노트 · NewHome.gs (즉시가용 자산 L16 + 기기 간 동기화)\n// 이 프로젝트에 doGet / doPost 함수는 이 파일에만 있어야 합니다
+const NH_TOKEN='${tok}';           // 앱의 동기화 코드와 같아야 합니다
+const NH_TAB='NewHome_Sync', NH_FOLDER='NewHome_캡처';
+function nhOut_(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+function nhSheet_(){ const ss=SpreadsheetApp.getActive(); let sh=ss.getSheetByName(NH_TAB); if(!sh){ sh=ss.insertSheet(NH_TAB); sh.hideSheet(); } return sh; }
+function nhRead_(){ const sh=nhSheet_(); const h=sh.getRange('A1:C1').getValues()[0]; const n=+h[2]||0; if(!n) return {ts:0,state:null};
   return {ts:+h[1]||0, state:JSON.parse(sh.getRange(2,1,n,1).getValues().map(r=>r[0]).join(''))}; }
-function write_(state,ts){ const sh=sheet_(), s=JSON.stringify(state), parts=[]; for(let i=0;i<s.length;i+=40000) parts.push([s.slice(i,i+40000)]);
+function nhWrite_(state,ts){ const sh=nhSheet_(), s=JSON.stringify(state), parts=[]; for(let i=0;i<s.length;i+=40000) parts.push([s.slice(i,i+40000)]);
   sh.getRange('A2:A').clearContent(); if(parts.length) sh.getRange(2,1,parts.length,1).setValues(parts); sh.getRange('A1:C1').setValues([['NewHome sync',ts,parts.length]]); }
-function folder_(){ const it=DriveApp.getFoldersByName(FOLDER); return it.hasNext()?it.next():DriveApp.createFolder(FOLDER); }
+function nhFolder_(){ const it=DriveApp.getFoldersByName(NH_FOLDER); return it.hasNext()?it.next():DriveApp.createFolder(NH_FOLDER); }
 function doGet(e){ const p=(e&&e.parameter)||{};
   if(!p.action){ const v=SpreadsheetApp.getActive().getSheetByName('Portfolio').getRange('L16').getValue();
-    return out_({cash:v, asof:Utilities.formatDate(new Date(),'Asia/Seoul','yyyy-MM-dd')}); }
-  if(p.token!==TOKEN) return out_({error:'token'});
-  if(p.action==='get') return out_(read_());
-  if(p.action==='img'){ const it=folder_().getFilesByName(p.id+'.jpg'); if(!it.hasNext()) return out_({error:'none'});
-    return out_({data:Utilities.base64Encode(it.next().getBlob().getBytes())}); }
-  return out_({error:'action'}); }
-function doPost(e){ const b=JSON.parse((e&&e.postData&&e.postData.contents)||'{}'); if(b.token!==TOKEN) return out_({error:'token'});
+    return nhOut_({cash:v, asof:Utilities.formatDate(new Date(),'Asia/Seoul','yyyy-MM-dd')}); }
+  if(p.token!==NH_TOKEN) return nhOut_({error:'token'});
+  if(p.action==='get') return nhOut_(nhRead_());
+  if(p.action==='img'){ const it=nhFolder_().getFilesByName(p.id+'.jpg'); if(!it.hasNext()) return nhOut_({error:'none'});
+    return nhOut_({data:Utilities.base64Encode(it.next().getBlob().getBytes())}); }
+  return nhOut_({error:'action'}); }
+function doPost(e){ const b=JSON.parse((e&&e.postData&&e.postData.contents)||'{}'); if(b.token!==NH_TOKEN) return nhOut_({error:'token'});
   const lock=LockService.getScriptLock(); lock.waitLock(20000);
   try{
-    if(b.action==='put'){ const cur=read_(); if(cur.ts>b.ts) return out_({ok:false,newer:true,ts:cur.ts,state:cur.state}); write_(b.state,b.ts); return out_({ok:true,ts:b.ts}); }
-    if(b.action==='img'){ const fo=folder_(), old=fo.getFilesByName(b.id+'.jpg'); while(old.hasNext()) old.next().setTrashed(true);
-      fo.createFile(Utilities.newBlob(Utilities.base64Decode(b.data),'image/jpeg',b.id+'.jpg')); return out_({ok:true}); }
-    if(b.action==='delimg'){ const it=folder_().getFilesByName(b.id+'.jpg'); while(it.hasNext()) it.next().setTrashed(true); return out_({ok:true}); }
+    if(b.action==='put'){ const cur=nhRead_(); if(cur.ts>b.ts) return nhOut_({ok:false,newer:true,ts:cur.ts,state:cur.state}); nhWrite_(b.state,b.ts); return nhOut_({ok:true,ts:b.ts}); }
+    if(b.action==='img'){ const fo=nhFolder_(), old=fo.getFilesByName(b.id+'.jpg'); while(old.hasNext()) old.next().setTrashed(true);
+      fo.createFile(Utilities.newBlob(Utilities.base64Decode(b.data),'image/jpeg',b.id+'.jpg')); return nhOut_({ok:true}); }
+    if(b.action==='delimg'){ const it=nhFolder_().getFilesByName(b.id+'.jpg'); while(it.hasNext()) it.next().setTrashed(true); return nhOut_({ok:true}); }
   } finally { lock.releaseLock(); }
-  return out_({error:'action'}); }`; }
+  return nhOut_({error:'action'}); }`; }
 async function syncPost(body){ const r=await fetch(S.sheetUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({token:S.syncTok},body)),redirect:'follow'}); if(!r.ok) throw new Error('HTTP '+r.status); const j=await r.json(); if(j.error) throw new Error(j.error==='token'?'동기화 코드가 Apps Script와 다릅니다':j.error); return j; }
 async function syncGet(params){ const u=S.sheetUrl+(S.sheetUrl.includes('?')?'&':'?')+new URLSearchParams(Object.assign({token:S.syncTok,t:Date.now()},params)); const r=await fetch(u,{cache:'no-store',redirect:'follow'}); if(!r.ok) throw new Error('HTTP '+r.status);
   const j=await r.json(); if(j.error) throw new Error(j.error==='token'?'동기화 코드가 Apps Script와 다릅니다':j.error==='action'?'Apps Script가 예전 코드입니다 (새 코드로 바꾸고 새 버전 배포)':j.error); if(j.cash!==undefined&&params.action) throw new Error('Apps Script가 예전 코드입니다 (새 코드로 바꾸고 새 버전 배포)'); return j; }
