@@ -523,7 +523,7 @@ tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
   <div class="card">
     <h3 style="margin-top:0">현재집 59㎡ 실거래 시세 (2015~)</h3>
     <div class="chart" id="chHouse"></div>
-    <div class="legend"><span><i style="background:var(--acc)"></i>6개월 이동 중앙값</span><span><i style="background:var(--warn)"></i>매도 트리거</span><span><i style="background:var(--mut)"></i>매수가 4.9억</span></div>
+    <div class="legend"><span><i style="background:var(--acc)"></i>시세 (6개월 이동 중앙값)</span><span><i style="background:var(--c4)"></i>월평균 실거래가</span><span><i style="background:var(--c4);opacity:.45;width:7px;height:7px;border-radius:50%"></i>개별 거래</span><span><i style="background:var(--warn)"></i>매도 트리거</span><span><i style="background:var(--mut)"></i>매수가 4.9억</span></div>
     <div class="tw" style="margin-top:10px"><table><thead><tr><th>최근 거래</th><th>층</th><th>거래가</th></tr></thead><tbody id="houseLast"></tbody></table></div>
     <div class="note" id="houseNote"></div>
   </div>
@@ -928,11 +928,17 @@ function gapSer(k){ const a=getSer(k), b=getSer(ME); return {v:a.v.map((x,i)=>x!
 const mIdx=m=>MONTHS.indexOf(m);
 let PTS=null, PTS_LOADING=false;
 async function loadPts(){ if(PTS||PTS_LOADING) return; PTS_LOADING=true;
-  try{ const r=await fetch('data/trades_pts.json',{cache:'no-cache'}); if(r.ok){ PTS=await r.json(); if($('p-gap').classList.contains('on')) renderGap(); } }catch(e){} PTS_LOADING=false; }
+  try{ const r=await fetch('data/trades_pts.json',{cache:'no-cache'}); if(r.ok){ PTS=await r.json(); if($('p-gap').classList.contains('on')) renderGap(); if($('p-sell').classList.contains('on')) renderSell(); } }catch(e){} PTS_LOADING=false; }
 // 거래일 → 월 인덱스(소수): 2015-01-01 기준 일수
 function ptX(days){ const base=new Date((PTS&&PTS.start||'2015-01-01')+'T00:00:00Z'); const d=new Date(base.getTime()+days*86400000);
   const y=d.getUTCFullYear(), m=d.getUTCMonth(); const m0=+MONTHS[0].slice(0,4)*12+(+MONTHS[0].slice(5)-1);
   return (y*12+m-m0)+(d.getUTCDate()-1)/31; }
+// 원 거래(PTS)로 월평균 실거래가 · 거래 없는 달은 앞뒤를 이은 점선
+function rawMonthly(k){ if(!PTS||!PTS.pts[k]) return null; const sum=MONTHS.map(()=>0), cnt=MONTHS.map(()=>0);
+  PTS.pts[k].forEach(([d,p])=>{ const i=Math.floor(ptX(d)); if(i>=0&&i<MONTHS.length){ sum[i]+=p; cnt[i]++; } });
+  const v=MONTHS.map((_,i)=>cnt[i]?Math.round(sum[i]/cnt[i]):null), f=v.map(()=>false);
+  let last=-1; v.forEach((x,i)=>{ if(x==null) return; if(last>=0&&i-last>1){ for(let j=last+1;j<i;j++){ v[j]=Math.round(v[last]+(x-v[last])*(j-last)/(i-last)); f[j]=true; } } last=i; });
+  return {v,f}; }
 function yearAvg(arr){ const out={}; MONTHS.forEach((m,i)=>{ const v=arr[i]; if(v==null) return; const y=m.slice(0,4); (out[y]=out[y]||[]).push(v); });
   const r={}; for(const y in out) r[y]=Math.round(out[y].reduce((a,b)=>a+b,0)/out[y].length); return r; }
 const houseEst=()=>{ const h=CX[ME].hi12; return h?h[1]:CX[ME].est; };
@@ -1251,7 +1257,10 @@ function renderCommute(){
 function renderSell(){
   $('in-trigger').value=S.trigger; $('trigLbl').textContent=eok(S.trigger);
   const hs=getSer(ME);
-  lineChart($('chHouse'),MONTHS,[{name:'현재집 59㎡',color:'var(--acc)',values:hs.v,fill:hs.f}],{refs:[{y:S.trigger,color:'var(--warn)'},{y:49000,color:'var(--mut)'}],fmt:v=>(v/10000).toFixed(1)+'억',tipFmt:v=>eok(v),xfmt:m=>m.slice(0,4),tipLabel:m=>m.replace('-','.'),aria:'현재집 59㎡ 월별 실거래 시세(6개월 이동 중앙값)'});
+  if(!PTS) loadPts();
+  const raw=rawMonthly(ME), dots=PTS&&PTS.pts[ME]?[{color:'var(--c4)',op:.32,r:2.2,xy:PTS.pts[ME].map(([d,p])=>[ptX(d),p])}]:[];
+  const hser=[{name:'시세 (6개월 중앙값)',color:'var(--acc)',values:hs.v,fill:hs.f,w:2.6}]; if(raw) hser.push({name:'월평균 실거래가',color:'var(--c4)',values:raw.v,fill:raw.f,w:1.6});
+  lineChart($('chHouse'),MONTHS,hser,{points:dots,refs:[{y:S.trigger,color:'var(--warn)'},{y:49000,color:'var(--mut)'}],fmt:v=>(v/10000).toFixed(1)+'억',tipFmt:v=>eok(v),xfmt:m=>m.slice(0,4),tipLabel:m=>m.replace('-','.'),aria:'현재집 59㎡ 시세(6개월 중앙값) · 월평균 실거래가 · 개별 거래'});
   const tb=$('houseLast'); tb.replaceChildren();
   CX[ME].last.slice().reverse().forEach(([d,p,f])=>{const tr=el('tr'); tr.append(el('td',null,d),el('td',null,f+'층'),el('td',null,eok(p))); tb.appendChild(tr);});
   $('houseNote').textContent=`최근 6개월 중앙값 ${eok(CX[ME].recent[0])} (${CX[ME].recent[1]}건), 최근 3개월 ${eok(CX[ME].r3[0])} (${CX[ME].r3[1]}건) · 실거래 ~${DATA.asof_trades}. 시세 ${eok(CX[ME].est)}${CX[ME].estSrc==='idx'?' (3개월 거래가 적어 지수 보정)':''}. 2021~22 최고 ${eok(CX[ME].peak21)}.`;
