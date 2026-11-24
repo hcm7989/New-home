@@ -682,13 +682,21 @@ tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
     <div class="tw"><table id="scTable"></table></div></details>
   </div>
   <div class="card" id="affCard">
-    <h3 style="margin-top:0">자산별 매수 가능액 · 규제 vs 비규제</h3>
+    <h3 style="margin-top:0">자산별 매수 가능액 · 규제 vs 신생아 특례 vs 비규제</h3>
     <p class="sub" style="margin-top:4px">자산(자기자금)과 대출 상한을 바꾸면 바로 다시 계산됩니다. 취득세·중개비·등기비를 빼고 남는 돈으로 살 수 있는 최고가입니다.</p>
     <label class="f"><span>대출 상한 · 규제지역</span><span><input type="number" id="aff-capReg" step="1000"><span class="unit">만</span></span></label>
     <label class="f"><span>대출 상한 · 비규제</span><span><input type="number" id="aff-capFree" step="1000"><span class="unit">만</span></span></label>
     <label class="f"><span>LTV 규제 / 비규제</span><span><input type="number" id="aff-ltvReg" step="5" style="width:4.4em"><span class="unit">%</span> <input type="number" id="aff-ltvFree" step="5" style="width:4.4em"><span class="unit">%</span></span></label>
     <label class="f"><span>소득(스트레스 DSR 40%)으로도 제한</span><input type="checkbox" id="aff-dsr" style="width:20px;height:20px"></label>
-    <div class="tw"><table id="affTable"></table></div>
+    <details id="aff-nbBox" style="margin:6px 0 2px"><summary>👶 신생아 특례 디딤돌 조건 <label style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-weight:400"><input type="checkbox" id="aff-nbOn" style="width:18px;height:18px">표에 표시</label></summary>
+    <label class="f"><span>LTV (규제지역도 동일)</span><span><input type="number" id="aff-nbLtv" step="5" style="width:4.4em"><span class="unit">%</span></span></label>
+    <label class="f"><span>대출 한도</span><span><input type="number" id="aff-nbCap" step="1000"><span class="unit">만</span></span></label>
+    <label class="f"><span>주택가격 상한</span><span><input type="number" id="aff-nbPmax" step="1000"><span class="unit">만</span></span></label>
+    <label class="f"><span>특례 금리 (고정)</span><span><input type="number" id="aff-nbRate" step="0.05" style="width:4.4em"><span class="unit">%</span></span></label>
+    <label class="f"><span>순자산 기준 (2026년)</span><span><input type="number" id="aff-nbAsset" step="100"><span class="unit">만</span></span></label>
+    <label class="f"><span>소득 기준 (맞벌이)</span><span><input type="number" id="aff-nbInc" step="1000"><span class="unit">만</span></span></label>
+    <div class="note">2027년 7월 출산 후 2년 안에 신청 가능. 구입자금은 <b>무주택 세대주</b>만 가능해 덕소 집 매도(잔금) 후 신청해야 합니다. 전용 85㎡ 이하 · DSR 대신 DTI 60% 적용 · 다른 주담대와 함께 쓰는 것은 기금e든든·은행에 확인.</div></details>
+    <style>#affTable th,#affTable td{padding:7px 5px;font-size:12px;white-space:nowrap}#affTable b{font-size:13.5px}</style><div class="tw"><table id="affTable"></table></div>
     <div class="btns" style="margin-top:8px"><button class="btn sm" id="aff-add">+ 자산 행 추가</button><button class="btn sm" id="aff-cur">내 자기자금 넣기</button><button class="btn sm" id="aff-reset">기본값</button></div>
     <div class="note" id="affNote"></div>
   </div>
@@ -2069,8 +2077,20 @@ $('btnBackupOut').onclick=exportBackup; $('backupIn').onchange=e=>{ const f=e.ta
 <script>
 /* ===== 자산별 매수 가능액 (규제 vs 비규제) ===== */
 (function(){
-const AFF_DEF={assets:[30000,35000,40000,45000],capReg:60000,capFree:60000,ltvReg:40,ltvFree:70,dsr:false};
-function A(){ if(!S.aff||!Array.isArray(S.aff.assets)) S.aff=JSON.parse(JSON.stringify(AFF_DEF)); return S.aff; }
+const AFF_DEF={assets:[30000,35000,40000,45000],capReg:60000,capFree:60000,ltvReg:40,ltvFree:70,dsr:false,nbOn:true,nbLtv:70,nbCap:40000,nbPmax:90000,nbRate:3.3,nbAsset:51100,nbInc:20000};
+const NBK=['nbLtv','nbCap','nbPmax','nbRate','nbAsset','nbInc'];
+function A(){ if(!S.aff||!Array.isArray(S.aff.assets)) S.aff=JSON.parse(JSON.stringify(AFF_DEF)); for(const k in AFF_DEF) if(S.aff[k]===undefined) S.aff[k]=AFF_DEF[k]; return S.aff; }
+function solveNB(E){ const a=A(); const L=P=>Math.min(a.nbLtv/100*P,a.nbCap); const pmax=a.nbPmax;
+  let lo=0,hi=pmax; if(pmax+acqCost(pmax,S.big).total-L(pmax)<=E) lo=pmax; else for(let i=0;i<80;i++){ const P=(lo+hi)/2; if(P+acqCost(P,S.big).total-L(P)<=E) lo=P; else hi=P; }
+  const P=Math.floor(lo/100)*100, loan=L(P), pay=pmt(loan,a.nbRate,S.term)*12; const needInc=(pay+(S.other||0))/0.6;
+  return {P,loan,needInc,capped:lo>=pmax,left:E-(P+acqCost(P,S.big).total-loan),pay}; }
+function cellNB(x,E){ const a=A(), td=el('td'); td.style.lineHeight='1.35'; const ok=S.income>=x.needInc;
+  td.appendChild(el('b',null,eok(x.P)+(x.capped?' (상한)':''))); td.appendChild(el('div','mut','대출 '+eok(x.loan))); td.appendChild(el('div','mut','월 '+Math.round(x.pay/12).toLocaleString()+'만'));
+  const d=el('div',ok?'ok':'bad','DTI 소득 '+eok(x.needInc)+(ok?' ✓':' ⚠')); d.style.fontSize='11px'; td.appendChild(d);
+  if(x.capped&&x.left>0){ const w=el('div','mut','자금 '+eok(x.left)+' 남음'); w.style.fontSize='11px'; td.appendChild(w); }
+  if(E>a.nbAsset){ const w=el('div','bad','순자산 기준 초과'); w.style.fontSize='11px'; td.appendChild(w); }
+  if(S.income>a.nbInc){ const w=el('div','bad','소득 기준 초과'); w.style.fontSize='11px'; td.appendChild(w); }
+  return td; }
 function dsrMaxLoan(){ // 스트레스 DSR 40% 안에서 가능한 최대 대출(만)
   const yr=Math.max(0,S.income*0.4-(S.other||0)); const m=yr/12, r=(S.rate+S.stress)/100/12, n=S.term*12;
   return r===0?m*n:m*(1-Math.pow(1+r,-n))/r; }
@@ -2085,23 +2105,25 @@ function cell(x){ const td=el('td'); const ok=S.income>=x.needInc;
   td.style.lineHeight='1.35'; return td; }
 function render(){
   const a=A(); [['capReg'],['capFree'],['ltvReg'],['ltvFree']].forEach(([k])=>{const i=$('aff-'+k); if(i&&document.activeElement!==i) i.value=a[k];});
-  $('aff-dsr').checked=!!a.dsr;
+  $('aff-dsr').checked=!!a.dsr; $('aff-nbOn').checked=!!a.nbOn; NBK.forEach(k=>{const i=$('aff-'+k); if(document.activeElement!==i) i.value=a[k];});
   const t=$('affTable'); t.replaceChildren(); const th=el('thead'), h=el('tr');
-  ['자산 (만)','규제지역','비규제','차이'].forEach(s=>h.appendChild(el('th',null,s))); th.appendChild(h); t.appendChild(th);
+  ['자산 (만)','규제 일반',...(a.nbOn?['👶 신생아 특례']:[]),'비규제'].forEach(s=>h.appendChild(el('th',null,s))); th.appendChild(h); t.appendChild(th);
   const tb=el('tbody');
   a.assets.forEach((E,idx)=>{ const tr=el('tr');
-    const td0=el('td'); const inp=document.createElement('input'); inp.type='number'; inp.step='500'; inp.value=E; inp.style.width='6em'; inp.style.padding='6px 8px';
+    const td0=el('td'); const inp=document.createElement('input'); inp.type='number'; inp.step='500'; inp.value=E; inp.style.width='5.2em'; inp.style.padding='5px 6px';
     inp.addEventListener('change',()=>{const v=parseFloat(inp.value); if(!isNaN(v)&&v>=0){a.assets[idx]=v; save(); render();}});
     td0.appendChild(inp); const wl=el('div','mut',won(E)+' '); const xb=el('a',null,'삭제'); xb.href='#'; xb.style.fontSize='11px'; xb.onclick=ev=>{ev.preventDefault(); a.assets.splice(idx,1); save(); render();}; wl.appendChild(xb); td0.appendChild(wl); tr.appendChild(td0);
     const r=solve(E,a.ltvReg,a.capReg), f=solve(E,a.ltvFree,a.capFree);
-    tr.appendChild(cell(r)); tr.appendChild(cell(f)); tr.appendChild(el('td',null,'+'+eok(f.P-r.P)));
+    tr.appendChild(cell(r)); if(a.nbOn) tr.appendChild(cellNB(solveNB(E),E)); tr.appendChild(cell(f));
     tb.appendChild(tr); });
   t.appendChild(tb);
-  $('affNote').textContent=`계산 조건: 금리 ${S.rate}% + 스트레스 ${S.stress}%p · ${S.term}년 원리금균등 · 부부 연소득 ${won(S.income)}${S.other?` · 기타 상환 ${won(S.other)}/년`:''} (위 ‘목표 주택 · 대출 조건’ 값). ‘소득’은 그 대출에 필요한 세전 연소득이며 ✓는 현재 소득으로 가능함을 뜻합니다. 처분조건부 1주택자는 무주택과 같은 LTV(규제 40%·비규제 70%), 수도권 15억 이하 주담대 최대 6억 (2026.11 기준). 규제지역은 6개월 내 전입·기존집 처분 의무가 붙습니다. 실제 한도는 은행 가조회로 확인하세요.`;
+  $('affNote').textContent=`계산 조건: 금리 ${S.rate}% + 스트레스 ${S.stress}%p · ${S.term}년 원리금균등 · 부부 연소득 ${won(S.income)}${S.other?` · 기타 상환 ${won(S.other)}/년`:''} (위 ‘목표 주택 · 대출 조건’ 값). ‘소득’은 그 대출에 필요한 세전 연소득이며 ✓는 현재 소득으로 가능함을 뜻합니다. 처분조건부 1주택자는 무주택과 같은 LTV(규제 40%·비규제 70%), 수도권 15억 이하 주담대 최대 6억 (2026.11 기준). 규제지역은 6개월 내 전입·기존집 처분 의무가 붙습니다. 👶 신생아 특례는 규제지역도 LTV 70%·최대 4억·9억 이하 주택이며, 대출 상환은 특례 금리 ${A().nbRate}%·${S.term}년 기준 DTI 60%로 봅니다(‘상한’ = 9억 주택가 상한에 걸림). 실제 한도는 은행 가조회로 확인하세요.`;
 }
 function bindAff(){
   ['capReg','capFree','ltvReg','ltvFree'].forEach(k=>$('aff-'+k).addEventListener('input',e=>{const v=parseFloat(e.target.value); if(!isNaN(v)){A()[k]=v; save(); render();}}));
   $('aff-dsr').addEventListener('change',e=>{A().dsr=e.target.checked; save(); render();});
+  $('aff-nbOn').addEventListener('click',e=>e.stopPropagation()); $('aff-nbOn').addEventListener('change',e=>{A().nbOn=e.target.checked; save(); render();});
+  NBK.forEach(k=>$('aff-'+k).addEventListener('input',e=>{const v=parseFloat(e.target.value); if(!isNaN(v)){A()[k]=v; save(); render();}}));
   $('aff-add').onclick=()=>{const a=A(); a.assets.push((a.assets[a.assets.length-1]||30000)+5000); save(); render();};
   $('aff-cur').onclick=()=>{const c=calcMoney(); const a=A(); a.assets.push(Math.round(c.equity/100)*100); save(); render(); toast('현재 자기자금 '+won(c.equity)+' 추가');};
   $('aff-reset').onclick=()=>{S.aff=JSON.parse(JSON.stringify(AFF_DEF)); save(); render();};
