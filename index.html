@@ -349,6 +349,11 @@ tr.sel td{background:var(--panel2)}
     <p class="sub" style="margin-top:2px">캡처로 넣은 분양권 매물. 매매가 = 분양가 + 프리미엄 + 옵션.</p>
     <div id="bunList"></div>
   </div>
+  <div class="card" id="xaCard" hidden>
+    <h3 style="margin-top:0">📐 기타 평형 호가</h3>
+    <p class="sub" style="margin-top:2px">59·84㎡ 외 평형(39·49·74㎡ 등)으로 넣은 호가. 실거래 시세 데이터는 59·84㎡만 있어 호가 갭만 보여줍니다.</p>
+    <div id="xaList"></div>
+  </div>
   <div class="card">
     <h3 style="margin-top:0" id="gapChartTitle">갭 추이</h3>
     <div class="seg sm" id="segMetric"><button data-v="gap">현재집과 갭</button><button data-v="price">실거래가</button><button data-v="idx">상승률</button></div>
@@ -563,7 +568,7 @@ tr.sel td{background:var(--panel2)}
   <label class="f" id="row-key"><span>단지</span><select id="ask-key"></select></label>
   <label class="f" id="row-bname" hidden><span>분양권 단지명</span><input type="text" id="ask-bname" style="width:12em"></label>
   <label class="f" id="row-utype" hidden><span>타입</span><input type="text" id="ask-utype" style="width:6em" placeholder="84A"></label>
-  <label class="f"><span>평형</span><select id="ask-pt"><option value="59">59㎡ (24평)</option><option value="84">84㎡ (34평)</option></select></label>
+  <label class="f"><span>평형</span><span><select id="ask-pt"><option value="39">39㎡ (16평)</option><option value="49">49㎡ (20평)</option><option value="59">59㎡ (24평)</option><option value="74">74㎡ (29평)</option><option value="84">84㎡ (34평)</option><option value="101">101㎡ (39평)</option><option value="114">114㎡ (43평)</option><option value="__c">직접 입력…</option></select> <input type="number" id="ask-ptc" min="20" max="300" step="1" style="width:4.5em" placeholder="전용" hidden><span class="unit" id="ask-ptu" hidden>㎡</span></span></label>
   <label class="f"><span>매매 호가</span><span><input type="number" id="ask-price" step="100"><span class="unit">만</span></span></label>
   <div class="note" id="askPriceTxt"></div>
   <div id="bunFields" hidden>
@@ -1117,7 +1122,7 @@ function showAsk(){ const q=ASKQ[ASKQ.i]; if(!q){ $('askSheet').hidden=true; ASK
   ks.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.textContent=l===lbl(ME)?'🏠 덕소 현재집 (매도 호가)':l; sel.appendChild(o); });
   const ok=m0&&m0.sc>=0.6; sel.value=ok?m0.l:'';
   const p=parseListing(q.text, ok&&CX[m0.l+'|59']?CX[m0.l+'|59'].est:null);
-  const pt=p.excl!=null?(p.excl<70?'59':'84'):'59'; $('ask-pt').value=pt;
+  const pt=ptBucket(p.excl); setPt(pt);
   if(ok){ const ref=(CX[m0.l+'|'+pt]||{}).est; const p2=parseListing(q.text,ref); if(!p.ppy&&p2.price) p.price=p2.price; }
   $('ask-price').value=p.price||''; $('ask-floor').value=p.floor; $('ask-dong').value=p.dong; $('ask-owner').checked=p.owner;
   const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}); let dt=p.date||today; const age=(Date.now()-new Date(dt).getTime())/864e5; $('ask-date').value=(age<0||age>60)?today:dt;
@@ -1133,22 +1138,36 @@ function askKind(){ const b=$('ask-kind').value==='bun'; $('row-key').hidden=b; 
 function bunCheck(){ if($('bunFields').hidden) return; const t=+$('ask-price').value, bp=+$('ask-bp').value, pr=+$('ask-prem').value||0, op=+$('ask-opt').value||0;
   if(!bp){ $('bunCheck').textContent=''; return; } const sum=bp+pr+op; $('bunCheck').textContent=Math.abs(sum-t)<=10?`✅ 분양가+프리미엄+옵션 = ${eok(sum)} (매매가와 일치)`:`⚠ 분양가+프리미엄+옵션 = ${eok(sum)} · 매매가 ${eok(t)}와 다릅니다. 확인해주세요.`; }
 function askPriceTxt(){ const v=+$('ask-price').value; $('askPriceTxt').textContent=v?'= '+eok(v):''; bunCheck(); }
-function saveAsk(){ if($('ask-kind').value==='bun') return saveBun(); const l=$('ask-key').value, pt=$('ask-pt').value, p=+$('ask-price').value;
+/* ===== 평형(전용면적) 선택: 59·84 외 모든 타입 ===== */
+const PT_STD=['39','49','59','74','84','101','114'];
+function ptBucket(x){ if(x==null||isNaN(+x)) return '59'; const a=+x; if(a>=57&&a<62) return '59'; if(a>=83&&a<86) return '84'; return String(Math.floor(a)); }
+function setPt(v){ v=String(v||'59'); const s=$('ask-pt'), c=$('ask-ptc'); if(PT_STD.includes(v)){ s.value=v; c.hidden=true; } else { s.value='__c'; c.hidden=false; c.value=v; } $('ask-ptu').hidden=c.hidden; }
+function getPt(){ const s=$('ask-pt'); if(s.value!=='__c') return s.value; const n=Math.round(+$('ask-ptc').value); return n>=20&&n<=300?String(n):''; }
+function saveAsk(){ if($('ask-kind').value==='bun') return saveBun(); const l=$('ask-key').value, pt=getPt(), p=+$('ask-price').value; if(!pt){ toast('평형(전용㎡)을 확인해주세요'); return; }
   if(!l){ toast('단지를 골라주세요'); return; } if(!(p>=3000)){ toast('호가를 확인해주세요'); return; }
-  const k=l===lbl(ME)?ME:l+'|'+pt; if(!CX[k]){ toast('이 단지에는 '+pt+'㎡ 데이터가 없습니다'); return; }
+  let k=l===lbl(ME)?ME:l+'|'+pt; const xk=!CX[k]; if(xk){ k='X:'+l+'|'+pt; }
   S.asks=S.asks||{}; const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),p,floor:$('ask-floor').value.trim(),dong:$('ask-dong').value.trim(),date:$('ask-date').value,owner:$('ask-owner').checked};
   const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b)).catch(()=>{ e.img=false; save(); }); }
   const dup=asksOf(k).filter(x=>x.p===e.p&&x.floor===e.floor&&x.dong===e.dong); dup.forEach(x=>IDB.del(x.id).catch(()=>{}));
   const L=asksOf(k).filter(x=>!(x.p===e.p&&x.floor===e.floor&&x.dong===e.dong)); L.push(e); S.asks[k]=L;
   if(k!==ME){ const w=watchKeys(); if(!w.includes(k)&&w.length<WATCH_MAX) S.watch=w.concat(k); }
-  save(); toast(`${l} ${eok(p)} 저장`); ASKQ.i++; renderGap(); renderHome(); showAsk(); }
-function saveBun(){ const nm=$('ask-bname').value.trim(), pt=$('ask-pt').value, p=+$('ask-price').value;
+  save(); toast(`${l} ${pt}㎡ ${eok(p)} 저장`+(xk?' (기타 평형 호가)':'')); ASKQ.i++; renderGap(); renderHome(); showAsk(); }
+function saveBun(){ const nm=$('ask-bname').value.trim(), pt=getPt(), p=+$('ask-price').value; if(!pt){ toast('평형(전용㎡)을 확인해주세요'); return; }
   if(!nm){ toast('분양권 단지명을 넣어주세요'); return; } if(!(p>=3000)){ toast('매매가를 확인해주세요'); return; }
   const k='B:'+nm+'|'+pt; S.asks=S.asks||{};
   const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),p,bun:true,btype:$('ask-btype').value,bp:+$('ask-bp').value||null,prem:+$('ask-prem').value||0,opt:+$('ask-opt').value||0,utype:$('ask-utype').value.trim(),floor:$('ask-floor').value.trim(),dong:$('ask-dong').value.trim(),date:$('ask-date').value,owner:$('ask-owner').checked};
   const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b)).catch(()=>{}); }
   const old=asksOf(k).filter(x=>x.p===e.p&&x.floor===e.floor&&x.dong===e.dong); old.forEach(x=>IDB.del(x.id).catch(()=>{}));
   S.asks[k]=asksOf(k).filter(x=>!old.includes(x)).concat(e); save(); toast(`분양권 ${nm} ${eok(p)} 저장`); ASKQ.i++; renderGap(); renderPlans(); showAsk(); }
+function renderXA(){ S.asks=S.asks||{}; const ks=Object.keys(S.asks).filter(k=>k.startsWith('X:')&&asksOf(k).length); const C=$('xaCard'); if(!C) return; C.hidden=!ks.length; const L=$('xaList'); L.replaceChildren(); const mine=myAsk();
+  ks.sort((a,b)=>a.localeCompare(b,'ko')).forEach(k=>{ const [nm,pt]=k.slice(2).split('|'); const A=askInfo(k); if(!A) return; const d=el('div','wc'); const t=el('div','wt'); const n=el('div','wn',nm); n.appendChild(el('small',null,pt+'㎡'));
+    t.append(n,el('span','st wait',A.min!=null?'최저 '+eok(A.min):'30일 지남')); d.appendChild(t);
+    if(A.min!=null) d.appendChild(el('div','wg',`호가 갭 ${eok(A.min-mine.p)} (덕소 ${eok(mine.p)} · ${mine.src}) · ${A.minE.floor||'-'}층 · ${A.minE.date.slice(5).replace('-','.')}`));
+    const w=el('div','wa'); const dt=el('details'); dt.appendChild(el('summary',null,`호가 ${A.list.length}건`)); const ul=el('ul');
+    A.list.forEach(e=>{ const li=el('li',e.stale?'old':''); li.append(el('span',null,`${eok(e.p)} · ${e.floor||'-'}층${e.dong?' '+e.dong+'동':''} · ${e.date.slice(2).replace(/-/g,'.')}${e.owner?' · 집주인':''}`));
+      const bx=el('span'); if(e.img){ const v=el('button','x','🖼'); v.title='캡처 보기'; v.onclick=()=>showAskImg(e.id,`${nm} ${pt}㎡ ${eok(e.p)} · ${e.date}`); bx.appendChild(v); }
+      const x=el('button','x','✕'); x.title='삭제'; x.onclick=()=>{ delAsk(k,e.id); renderXA(); }; bx.appendChild(x); li.appendChild(bx); ul.appendChild(li); });
+    dt.appendChild(ul); w.appendChild(dt); d.appendChild(w); L.appendChild(d); }); }
 function bunGroups(){ S.asks=S.asks||{}; return Object.keys(S.asks).filter(k=>k.startsWith('B:')).map(k=>{ const [nm,pt]=k.slice(2).split('|'); const A=askInfo(k); return {k,nm,pt,A}; }).filter(g=>g.A); }
 function renderBun(){ const G=bunGroups(); $('bunCard').hidden=!G.length; const BL=$('bunList'); BL.replaceChildren(); const mine=myAsk();
   G.forEach(g=>{ const d=el('div','wc'); const t=el('div','wt'); const n=el('div','wn',g.nm); n.appendChild(el('small',null,g.pt+'㎡ 분양권'));
@@ -1271,7 +1290,7 @@ function renderGap(){ setTimeout(renderMap,0);
       el('td',r.dsr==null?'':(r.short>0||r.dsr>40)?'bad':r.dsr>30?'warn':'',r.loan==null?'—':r.loan>0?eok(r.loan)+' · '+r.dsr.toFixed(0)+'%'+(r.short>0?' (한도 초과)':''):'불필요'),
       el('td',r.cm==null?'':cmCls(r.cm/2),r.cm==null?'—':r.cm+'분'));
     tr.onclick=()=>toggleWatch(r.k); tb.appendChild(tr); });
-  T.appendChild(tb); renderBun();
+  T.appendChild(tb); renderBun(); renderXA();
 }
 
 /* ================= 계산: 자금 ================= */
@@ -1460,7 +1479,7 @@ document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',(
 $('btnSync').onclick=syncSheet;
 $('askFile').addEventListener('change',e=>{ handleAskFiles(e.target.files); e.target.value=''; });
 document.addEventListener('paste',e=>{ if(!$('p-gap').classList.contains('on')) return; const fs=[...(e.clipboardData?.files||[])]; if(fs.length){ e.preventDefault(); handleAskFiles(fs); } });
-$('ask-price').addEventListener('input',askPriceTxt); $('ask-kind').addEventListener('change',askKind); ['ask-bp','ask-prem','ask-opt'].forEach(i=>$(i).addEventListener('input',bunCheck)); $('askSave').onclick=saveAsk; $('imgClose').onclick=()=>{ $('imgSheet').hidden=true; URL.revokeObjectURL($('imgView').src); }; $('imgSheet').onclick=e=>{ if(e.target.id==='imgSheet') $('imgClose').click(); }; $('askSkip').onclick=()=>{ ASKQ.i++; showAsk(); }; $('askCancel').onclick=()=>{ ASKQ=[]; $('askSheet').hidden=true; };
+$('ask-price').addEventListener('input',askPriceTxt); $('ask-pt').addEventListener('change',()=>{ const c=$('ask-ptc'); c.hidden=$('ask-pt').value!=='__c'; $('ask-ptu').hidden=c.hidden; if(!c.hidden) c.focus(); }); $('ask-kind').addEventListener('change',askKind); ['ask-bp','ask-prem','ask-opt'].forEach(i=>$(i).addEventListener('input',bunCheck)); $('askSave').onclick=saveAsk; $('imgClose').onclick=()=>{ $('imgSheet').hidden=true; URL.revokeObjectURL($('imgView').src); }; $('imgSheet').onclick=e=>{ if(e.target.id==='imgSheet') $('imgClose').click(); }; $('askSkip').onclick=()=>{ ASKQ.i++; showAsk(); }; $('askCancel').onclick=()=>{ ASKQ=[]; $('askSheet').hidden=true; };
 [...$('segMap').children].forEach(b=>b.onclick=()=>{ S.mapScope=b.dataset.v; save(); renderMap(); });
 $('realAdd').onclick=()=>{ const k=$('realAddSel').value; if(!k) return; realList(); S.real.push({k,ask:CX[k].est,date:new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})}); save(); renderReal(); toast('후보에 추가 (호가는 시세로 임시 입력)'); };
 $('btnWatchNone').onclick=()=>{ setWatch([]); toast('관심 단지를 모두 해제했습니다'); }; $('btnWatchDef').onclick=()=>{ setWatch(DEF_WATCH.slice()); toast('추천 구성으로 바꿨습니다'); };
