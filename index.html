@@ -1114,8 +1114,8 @@ async function handleAskFiles(files){ files=[...files].filter(f=>/^image\//.test
     for(const f of files){ const {canvas,url}=await prepImage(f); const {data}=await w.recognize(canvas); ASKQ.push({url,text:data.text,file:f}); }
     $('askMsg').textContent=`${files.length}장 읽음 · 확인 후 저장하세요`; ASKQ.i=0; showAsk();
   }catch(e){ $('askMsg').textContent='실패: '+e.message; } }
-function showAsk(){ const q=ASKQ[ASKQ.i]; if(!q){ $('askSheet').hidden=true; ASKQ=[]; return; }
-  $('askSheet').hidden=false; $('askStep').textContent=`${ASKQ.i+1}/${ASKQ.length}`; $('askImg').src=q.url;
+function showAsk(){ const q=ASKQ[ASKQ.i]; if(!q){ $('askSheet').hidden=true; const af=ASKQ.after; ASKQ=[]; if(af) try{af();}catch(e){} return; }
+  $('askSheet').hidden=false; $('askStep').textContent=`${ASKQ.i+1}/${ASKQ.length}`; $('askImg').src=q.url; $('askImg').hidden=!q.url; $('askSkip').hidden=false; $('askCancel').textContent='모두 취소';
   const m0=matchLabel(parseListing(q.text).name||'');
   const ks=[...new Set(Object.keys(CX).map(lbl))].sort((a,b)=>(a===lbl(ME)?-1:b===lbl(ME)?1:a.localeCompare(b,'ko')));
   const sel=$('ask-key'); sel.replaceChildren(); const o0=document.createElement('option'); o0.value=''; o0.textContent='— 단지를 고르세요 —'; sel.appendChild(o0);
@@ -1143,20 +1143,35 @@ const PT_STD=['39','49','59','74','84','101','114'];
 function ptBucket(x){ if(x==null||isNaN(+x)) return '59'; const a=+x; if(a>=57&&a<62) return '59'; if(a>=83&&a<86) return '84'; return String(Math.floor(a)); }
 function setPt(v){ v=String(v||'59'); const s=$('ask-pt'), c=$('ask-ptc'); if(PT_STD.includes(v)){ s.value=v; c.hidden=true; } else { s.value='__c'; c.hidden=false; c.value=v; } $('ask-ptu').hidden=c.hidden; }
 function getPt(){ const s=$('ask-pt'); if(s.value!=='__c') return s.value; const n=Math.round(+$('ask-ptc').value); return n>=20&&n<=300?String(n):''; }
+/* ===== 저장된 호가 수정 ===== */
+function editBtn(k,e,big,after){ const b=el('button',big?'btn sm':'x',big?'수정':'✏️'); b.title='수정'; b.onclick=ev=>{ ev.stopPropagation(); editAsk(k,e.id); if(after) ASKQ.after=after; }; return b; }
+function editAsk(k,id){ const e=asksOf(k).find(x=>x.id===id); if(!e){ toast('매물을 찾지 못했습니다'); return; }
+  ASKQ=[{url:'',text:'',file:null,edit:{k,id}}]; ASKQ.i=0; showAsk();
+  $('askStep').textContent='수정'; $('askWarn').textContent='저장된 매물 수정 · 값을 고친 뒤 저장을 누르세요. 단지·평형을 바꾸면 그 단지로 옮겨집니다.';
+  const img=$('askImg'); img.hidden=true; if(e.img) IDB.get(id).then(b=>{ if(b){ img.src=URL.createObjectURL(b); img.hidden=false; } }).catch(()=>{});
+  const pt=k.split('|')[1]||'59';
+  if(k.startsWith('B:')){ $('ask-kind').value='bun'; $('ask-bname').value=k.slice(2).split('|')[0]; $('ask-btype').value=e.btype||''; $('ask-bp').value=e.bp??''; $('ask-prem').value=e.prem??''; $('ask-opt').value=e.opt??''; $('ask-utype').value=e.utype||''; }
+  else { $('ask-kind').value='sale'; const sel=$('ask-key'); let v=k===ME?lbl(ME):k.startsWith('X:')?k.slice(2).split('|')[0]:lbl(k);
+    if(k.startsWith('X:')&&[...sel.options].some(o=>o.value==='X:'+v)) v='X:'+v;
+    if(![...sel.options].some(o=>o.value===v)){ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); } sel.value=v; }
+  setPt(pt); $('ask-price').value=e.p; $('ask-floor').value=e.floor||''; $('ask-dong').value=e.dong||''; $('ask-date').value=e.date||''; $('ask-owner').checked=!!e.owner;
+  askKind(); if(typeof askKeyRow==='function') askKeyRow(); askPriceTxt(); $('askSkip').hidden=true; $('askCancel').textContent='취소'; }
+function takeEdit(){ const q=ASKQ[ASKQ.i]; if(!q||!q.edit) return null; const {k,id}=q.edit; const old=asksOf(k).find(x=>x.id===id);
+  S.asks[k]=asksOf(k).filter(x=>x.id!==id); if(!S.asks[k].length) delete S.asks[k]; return old||null; }
 function saveAsk(){ if($('ask-kind').value==='bun') return saveBun(); const l=$('ask-key').value, pt=getPt(), p=+$('ask-price').value; if(!pt){ toast('평형(전용㎡)을 확인해주세요'); return; }
   if(!l){ toast('단지를 골라주세요'); return; } if(!(p>=3000)){ toast('호가를 확인해주세요'); return; }
   let k=l===lbl(ME)?ME:l+'|'+pt; const xk=!CX[k]; if(xk){ k='X:'+l+'|'+pt; }
-  S.asks=S.asks||{}; const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),p,floor:$('ask-floor').value.trim(),dong:$('ask-dong').value.trim(),date:$('ask-date').value,owner:$('ask-owner').checked};
-  const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b)).catch(()=>{ e.img=false; save(); }); }
+  const ED=takeEdit(); S.asks=S.asks||{}; const e={id:ED?ED.id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),p,floor:$('ask-floor').value.trim(),dong:$('ask-dong').value.trim(),date:$('ask-date').value,owner:$('ask-owner').checked};
+  if(ED&&ED.img) e.img=true; const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b)).catch(()=>{ e.img=false; save(); }); }
   const dup=asksOf(k).filter(x=>x.p===e.p&&x.floor===e.floor&&x.dong===e.dong); dup.forEach(x=>IDB.del(x.id).catch(()=>{}));
   const L=asksOf(k).filter(x=>!(x.p===e.p&&x.floor===e.floor&&x.dong===e.dong)); L.push(e); S.asks[k]=L;
   if(k!==ME){ const w=watchKeys(); if(!w.includes(k)&&w.length<WATCH_MAX) S.watch=w.concat(k); }
   save(); toast(`${l} ${pt}㎡ ${eok(p)} 저장`+(xk?' (기타 평형 호가)':'')); ASKQ.i++; renderGap(); renderHome(); showAsk(); }
 function saveBun(){ const nm=$('ask-bname').value.trim(), pt=getPt(), p=+$('ask-price').value; if(!pt){ toast('평형(전용㎡)을 확인해주세요'); return; }
   if(!nm){ toast('분양권 단지명을 넣어주세요'); return; } if(!(p>=3000)){ toast('매매가를 확인해주세요'); return; }
-  const k='B:'+nm+'|'+pt; S.asks=S.asks||{};
-  const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),p,bun:true,btype:$('ask-btype').value,bp:+$('ask-bp').value||null,prem:+$('ask-prem').value||0,opt:+$('ask-opt').value||0,utype:$('ask-utype').value.trim(),floor:$('ask-floor').value.trim(),dong:$('ask-dong').value.trim(),date:$('ask-date').value,owner:$('ask-owner').checked};
-  const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b)).catch(()=>{}); }
+  const k='B:'+nm+'|'+pt; const ED=takeEdit(); S.asks=S.asks||{};
+  const e={id:ED?ED.id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),p,bun:true,btype:$('ask-btype').value,bp:+$('ask-bp').value||null,prem:+$('ask-prem').value||0,opt:+$('ask-opt').value||0,utype:$('ask-utype').value.trim(),floor:$('ask-floor').value.trim(),dong:$('ask-dong').value.trim(),date:$('ask-date').value,owner:$('ask-owner').checked};
+  if(ED&&ED.img) e.img=true; const q=ASKQ[ASKQ.i]; if(q&&q.file){ e.img=true; shrinkImage(q.file).then(b=>IDB.put(e.id,b)).catch(()=>{}); }
   const old=asksOf(k).filter(x=>x.p===e.p&&x.floor===e.floor&&x.dong===e.dong); old.forEach(x=>IDB.del(x.id).catch(()=>{}));
   S.asks[k]=asksOf(k).filter(x=>!old.includes(x)).concat(e); save(); toast(`분양권 ${nm} ${eok(p)} 저장`); ASKQ.i++; renderGap(); renderPlans(); showAsk(); }
 function renderXA(){ S.asks=S.asks||{}; const ks=Object.keys(S.asks).filter(k=>k.startsWith('X:')&&asksOf(k).length); const C=$('xaCard'); if(!C) return; C.hidden=!ks.length; const L=$('xaList'); L.replaceChildren(); const mine=myAsk();
@@ -1166,7 +1181,7 @@ function renderXA(){ S.asks=S.asks||{}; const ks=Object.keys(S.asks).filter(k=>k
     const w=el('div','wa'); const dt=el('details'); dt.appendChild(el('summary',null,`호가 ${A.list.length}건`)); const ul=el('ul');
     A.list.forEach(e=>{ const li=el('li',e.stale?'old':''); li.append(el('span',null,`${eok(e.p)} · ${e.floor||'-'}층${e.dong?' '+e.dong+'동':''} · ${e.date.slice(2).replace(/-/g,'.')}${e.owner?' · 집주인':''}`));
       const bx=el('span'); if(e.img){ const v=el('button','x','🖼'); v.title='캡처 보기'; v.onclick=()=>showAskImg(e.id,`${nm} ${pt}㎡ ${eok(e.p)} · ${e.date}`); bx.appendChild(v); }
-      const x=el('button','x','✕'); x.title='삭제'; x.onclick=()=>{ delAsk(k,e.id); renderXA(); }; bx.appendChild(x); li.appendChild(bx); ul.appendChild(li); });
+      bx.appendChild(editBtn(k,e)); const x=el('button','x','✕'); x.title='삭제'; x.onclick=()=>{ delAsk(k,e.id); renderXA(); }; bx.appendChild(x); li.appendChild(bx); ul.appendChild(li); });
     dt.appendChild(ul); w.appendChild(dt); d.appendChild(w); L.appendChild(d); }); }
 function bunGroups(){ S.asks=S.asks||{}; return Object.keys(S.asks).filter(k=>k.startsWith('B:')).map(k=>{ const [nm,pt]=k.slice(2).split('|'); const A=askInfo(k); return {k,nm,pt,A}; }).filter(g=>g.A); }
 function renderBun(){ const G=bunGroups(); $('bunCard').hidden=!G.length; const BL=$('bunList'); BL.replaceChildren(); const mine=myAsk();
@@ -1176,7 +1191,7 @@ function renderBun(){ const G=bunGroups(); $('bunCard').hidden=!G.length; const 
     const w=el('div','wa'); const dt=el('details'); dt.appendChild(el('summary',null,`매물 ${g.A.list.length}건`)); const ul=el('ul');
     g.A.list.forEach(e=>{ const li=el('li',e.stale?'old':''); li.append(el('span',null,`${e.btype?'['+(e.btype==='조합원'?'조합원':'일반')+'] ':''}${eok(e.p)} · P ${won(e.prem||0)} · ${e.utype||g.pt}${e.dong?' '+e.dong+'동':''} ${e.floor||'-'}층 · ${e.date.slice(2).replace(/-/g,'.')}`));
       const bx=el('span'); if(e.img){ const v=el('button','x','🖼'); v.title='캡처 보기'; v.onclick=()=>showAskImg(e.id,`${g.nm} ${eok(e.p)} · ${e.date}`); bx.appendChild(v); }
-      const x=el('button','x','✕'); x.title='삭제'; x.onclick=()=>{ delAsk(g.k,e.id); renderBun(); renderPlans(); }; bx.appendChild(x); li.appendChild(bx); ul.appendChild(li); });
+      bx.appendChild(editBtn(g.k,e)); const x=el('button','x','✕'); x.title='삭제'; x.onclick=()=>{ delAsk(g.k,e.id); renderBun(); renderPlans(); }; bx.appendChild(x); li.appendChild(bx); ul.appendChild(li); });
     dt.appendChild(ul); w.appendChild(dt); d.appendChild(w); BL.appendChild(d); }); }
 const WATCH_MAX=8;
 const DEF_WATCH=['구리인창e편한세상|59','구리인창주공1|59','안양역한양수자인리버파크|59','매탄위브하늘채|59','다산e편한세상자이|59','미사강변센트리버|59'];
@@ -1222,7 +1237,7 @@ function renderGap(){ setTimeout(renderMap,0);
       w.appendChild(top); if(A.min!=null) w.appendChild(el('div','mut',`호가 갭 = 최저 호가 − 덕소 ${eok(mine.p)} (${mine.src})`));
       const dt=el('details'); dt.appendChild(el('summary',null,`호가 ${A.list.length}건${A.old?` (30일 지난 ${A.old}건 제외)`:''}`)); const ul=el('ul');
       A.list.forEach(e=>{ const li=el('li',e.stale?'old':''); li.append(el('span',null,`${eok(e.p)} · ${e.floor||'-'}층${e.dong?' '+e.dong+'동':''} · ${e.date.slice(2).replace(/-/g,'.')}${e.owner?' · 집주인':''}`)); const bx=el('span'); if(e.img){ const v=el('button','x','🖼'); v.title='캡처 보기'; v.onclick=()=>showAskImg(e.id,`${c.name} ${eok(e.p)} · ${e.date}`); bx.appendChild(v); }
-        const x=el('button','x','✕'); x.title='삭제'; x.onclick=()=>{ if(confirmDel(e)) delAsk(k,e.id); }; bx.appendChild(x); li.appendChild(bx); ul.appendChild(li); });
+        bx.appendChild(editBtn(k,e)); const x=el('button','x','✕'); x.title='삭제'; x.onclick=()=>{ if(confirmDel(e)) delAsk(k,e.id); }; bx.appendChild(x); li.appendChild(bx); ul.appendChild(li); });
       dt.appendChild(ul); w.appendChild(dt); d.appendChild(w); }
     d.onclick=()=>{ S.gapSel=k; S.gapView='one'; save(); renderGap(); $('chGap').scrollIntoView({behavior:'smooth',block:'center'}); };
     WL.appendChild(d); });
