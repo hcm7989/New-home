@@ -744,7 +744,7 @@ tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
 
 <!-- ===== 현실 후보 ===== -->
 <section class="page" id="p-real">
-  <div class="ph"><div><h2>현실 후보</h2><p class="sub">1~2년 안에 실제로 갈아탈 수 있는 <b>비규제</b> 단지 · 조건 충족 매트릭스</p></div></div>
+  <div class="ph"><div><h2>현실 후보</h2><p class="sub">1~2년 안에 실제로 갈아탈 수 있는 <b>비규제 9억 · 규제 8억(신생아 특례)</b> 단지와 재개발 투자 · 조건 충족 매트릭스</p></div></div>
   <div class="card">
     <div class="ch"><h3>내 조건</h3></div>
     <div class="rcrit" id="realCrit"></div>
@@ -753,6 +753,7 @@ tbody tr:hover td.scn{background:color-mix(in srgb,var(--acc) 16%,transparent)}
   <div class="card flush"><div class="tw"><table class="mx" id="realMx"></table></div></div>
   <div class="note" style="margin:-4px 0 12px">✓ 충족 · △ 근소 미달 · ✕ 미달 · ? 직접 확인. 행을 누르면 아래에 상세가 열립니다.</div>
   <div id="realList"></div>
+  <div id="redevList"></div>
   <div class="g g-2">
     <div class="card">
       <div class="ch"><h3>후보 추가</h3></div>
@@ -1100,7 +1101,7 @@ function loadLeaflet(){ if(window.L) return Promise.resolve(); if(LLOAD) return 
     const sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'; sc.onload=res; sc.onerror=()=>{LLOAD=null; rej();}; document.head.appendChild(sc); }); return LLOAD; }
 function geoOf(label){ const C=DATA.commute||{}; const c=(C.complexes||{})[label]; if(c&&c.lat) return [c.lat,c.lon]; const g=(C.geo||{})[label]; return g||null; }
 function mapKeys(){ const v=S.mapScope||'watch';
-  if(v==='real') return realList().map(r=>r.k);
+  if(v==='real') return [...new Set(realList().map(r=>CX[r.k]?r.k:refKey(lbl(r.k))).filter(Boolean))];
   if(v==='all'){ const seen=new Set(); return Object.keys(CX).filter(k=>k!==ME&&hasData(k)).sort((a,b)=>(a.split('|')[1]==='59'?0:1)-(b.split('|')[1]==='59'?0:1)).filter(k=>{ const l=lbl(k); if(seen.has(l)) return false; seen.add(l); return true; }); }
   return watchKeys(); }
 function renderMap(){ [...$('segMap').children].forEach(b=>b.classList.toggle('on',b.dataset.v===(S.mapScope||'watch')));
@@ -1138,19 +1139,53 @@ function drawPins(fit){ {
   } }
 
 /* ================= 현실 후보 ================= */
-const REAL_DEF=[['다산e편한세상자이|59',103000],['다산한강반도유보라|84',100000],['다산자연앤e편한세상3차|59',94000],['덕소동부센트레빌|84',73000],['래미안안양메가트리아|59',102000],['안양역한양수자인리버파크|59',94000]];
-const REAL_C={max:100000,loan:50000,st:10,sc:8,tr:60,km:30,car:60};
+const REAL_V=2;
+const REAL_DEF=[
+ {k:'다산자연앤e편한세상3차|21평',grp:'free',ask:80000,py:21,name:'다산 e편한세상 3차'},
+ {k:'덕소강변라온프라이빗|34평',grp:'free',region:'덕소',ask:90000,py:34,name:'덕소 라온프라이빗 리버포레',note:'분양권'},
+ {k:'래미안안양메가트리아|18평',grp:'free',ask:60000,py:18,name:'안양 래미안 메가트리아'},
+ {k:'래미안안양메가트리아|22평',grp:'free',ask:90000,py:22,name:'안양 래미안 메가트리아'},
+ {k:'매교역팰루시드|30평',grp:'free',ask:90000,py:30,name:'수원 매교역 팰루시드'},
+ {k:'화서역푸르지오더에듀포레|59',grp:'reg',ask:81000,py:25,name:'화서역 푸르지오 더에듀포레',note:'또는 꽃뫼마을 구축 단지'},
+ {k:'매탄위브하늘채|59',grp:'reg',ask:81000,py:24,name:'수원 매탄위브하늘채'},
+ {k:'구리세림프로미스3차|-',grp:'reg',region:'구리',ask:80000,name:'구리 세림프로미스 3차',note:'재개발 · 토허제 X'},
+ {k:'비산한화꿈에그린|24평',grp:'reg',region:'안양(동안)',ask:75000,py:24,name:'안양 비산 한화꿈에그린'},
+ {k:'수택2구역|재개발',grp:'redev',ask:30000,name:'구리 수택2구역',note:'3억대 · 투자 후 덕소 월세'},
+ {k:'상대원3구역|재개발',grp:'redev',ask:30000,name:'성남 상대원3구역',note:'3억대 · 투자 후 덕소 월세'},
+ {k:'장위14구역|재개발',grp:'redev',ask:30000,name:'장위14구역',note:'3억대 · 투자 후 덕소 월세'}];
+const GRP_T={free:'🟢 비규제 · 9억 이하',reg:'👶 규제 · 8억 이하 (신생아 특례 사용 시)',redev:'🏗 재개발 투자 (투자 후 덕소 월세)'};
+const rName=r=>r.name||(CX[r.k]?CX[r.k].name:lbl(r.k));
+const refKey=L=>['59','84'].map(p=>L+'|'+p).find(x=>CX[x])||null;
+const rPt=r=>{ const p=r.py?r.py+'평':''; return CX[r.k]?(p?p+' · ':'')+CX[r.k].pt+'㎡':(p||(r.k.split('|')[1]||'').replace('-','')); };
+function realAll(){ if(S.realV!==REAL_V){ const keep=(Array.isArray(S.real)?S.real:[]).filter(r=>lbl(r.k)==='덕소동부센트레빌');
+    S.real=REAL_DEF.map(x=>Object.assign({date:'2026-11-24'},x)); if(keep.length) keep.forEach(r=>S.real.push(Object.assign({grp:'free'},r))); else S.real.push({k:'덕소동부센트레빌|84',grp:'free',ask:73000,date:'2026-11-17'});
+    S.realV=REAL_V; save(); } return S.real; }
+function renderRedev(){ const B=$('redevList'); if(!B) return; B.replaceChildren(); const R=realAll().filter(r=>r.grp==='redev'); if(!R.length) return;
+  const m=calcMoney(); const cashNow=m.net+S.cash; const h=el('h3',null,GRP_T.redev); h.style.margin='18px 4px 8px'; B.appendChild(h);
+  R.forEach(r=>{ const d=el('div','card rc'); const hh=el('div','rh'); const n=el('div','rn',rName(r)); n.appendChild(el('small',null,'재개발'));
+    const left=cashNow-r.ask; n.appendChild(el('div','rs '+(left>=0?'ok':'bad'),left>=0?`투자 가능 · 여유 ${eok(left)}`:`현금 ${eok(-left)} 부족`));
+    const pr=el('div','rp'); pr.append(el('b',null,eok(r.ask)),el('small',null,'투자금 · '+(r.date||'').slice(5).replace('-','.'))); hh.append(n,pr); d.appendChild(hh);
+    const ck=el('div','rchk'); [['💰',`덕소 매도 순현금 ${eok(m.net)} + 즉시가용 ${eok(S.cash)} = ${eok(cashNow)} (‘내 자금’ 매도가 기준)`],['🏠','재개발 매물(구옥·입주권)은 주택 수에 포함돼 무주택이 아니게 됨 → 신생아 특례 구입자금과 함께 쓰기 어려움'],...(r.note?[['📝',r.note]]:[])]
+      .forEach(([i,t])=>{ const row=el('div'); row.append(el('span',null,i),el('span',null,t)); ck.appendChild(row); }); d.appendChild(ck);
+    const ta=el('textarea'); ta.placeholder='사업 단계·감정가·프리미엄·추가분담금·이주 시기 메모'; ta.value=(S.realMemo||{})[r.k]||''; ta.onchange=()=>{ S.realMemo=S.realMemo||{}; S.realMemo[r.k]=ta.value; save(); }; d.appendChild(ta);
+    const tl=el('div','rtools'); const inp=el('input'); inp.type='number'; inp.step='500'; inp.value=r.ask;
+    const sv=el('button','btn sm','투자금 저장'); sv.onclick=()=>{ const v=+inp.value; if(!(v>=1000)){ toast('금액을 확인해주세요'); return; } r.ask=v; r.date=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}); save(); renderReal(); toast('저장'); };
+    const lk=el('a','btn sm','네이버 검색 ↗'); lk.href='https://m.search.naver.com/search.naver?query='+encodeURIComponent(rName(r)+' 재개발'); lk.target='_blank'; lk.rel='noopener';
+    const rm=el('button','btn sm','후보에서 빼기'); rm.onclick=()=>{ S.real=S.real.filter(x=>x!==r); save(); renderReal(); };
+    tl.append(inp,el('span','mut','만'),sv,lk,rm); d.appendChild(tl); B.appendChild(d); }); }
+const REAL_C={max:90000,maxReg:80000,nbCap:40000,nbPmax:90000,loan:50000,st:10,sc:8,tr:60,km:30,car:60};
 const HH={'다산e편한세상자이':1685,'다산한강반도유보라':1261,'다산자연앤e편한세상3차':1394,'래미안안양메가트리아':4250,'안양역한양수자인리버파크':419,'구리인창e편한세상':null};
 const NB={'다산':'갈매역아이파크','덕소':'구리인창e편한세상','안양(만안)':'평촌자이아이파크'};
-function realList(){ if(!Array.isArray(S.real)) S.real=REAL_DEF.map(([k,p])=>({k,ask:p,date:'2026-11-17'})); return S.real.filter(r=>CX[r.k]||cmOf(lbl(r.k))); }
+function realList(){ return realAll().filter(r=>r.grp!=='redev'); }
 function realAsk(r){ const A=askInfo(r.k); if(A&&A.min!=null&&(!r.date||A.minE.date>=r.date)) return {p:A.min,src:'📷 캡처 최저 · '+A.minE.date.slice(5).replace('-','.')}; return {p:r.ask,src:'입력 · '+(r.date||'').slice(5).replace('-','.')}; }
 const perM=k=>{ const c=CX[k]; if(!c||c.est==null) return null; return c.est/(c.pt==='59'?59.7:84.6); };
 function nbKey(k){ const c=CX[k]; if(!c) return null; const nb=NB[c.region]; if(!nb) return null; return CX[nb+'|'+c.pt]?nb+'|'+c.pt:(CX[nb+'|84']?nb+'|84':(CX[nb+'|59']?nb+'|59':null)); }
-function realEval(r){ const k=r.k, L=lbl(k), c=CX[k]||{}, a=realAsk(r), C=REAL_C, cm=cmOf(L), W=(DATA.commute&&DATA.commute.walk||{})[L];
-  const m=calcMoney(a.p,false,'free'); const it=[];
-  it.push({t:'비규제',v:c.thz?'토허제·규제':'비규제 (LTV 70%)',st:c.thz?'bad':'ok'});
-  it.push({t:'10억 이하',v:eok(a.p),st:a.p<=C.max?'ok':'bad'});
-  const lok=m.shortage===0&&m.dsr<=40&&m.loan<=C.loan; it.push({t:'대출 5억 이하',v:m.loan>0?`${eok(m.loan)} · DSR ${m.dsr.toFixed(0)}%`+(m.shortage>0?` · 한도 ${eok(m.shortage)} 부족`:''):'불필요',st:lok?'ok':(m.loan<=C.loan*1.05&&m.shortage===0?'warn':'bad')});
+function realEval(r){ const k=r.k, L=lbl(k), rf=refKey(L), c=Object.assign({},rf?CX[rf]:{},CX[k]||{},{est:CX[k]?CX[k].est:null}), a=realAsk(r), C=REAL_C, reg=r.grp==='reg', MAX=reg?C.maxReg:C.max, cm=cmOf(L), W=(DATA.commute&&DATA.commute.walk||{})[L];
+  const m=calcMoney(a.p,false,reg?'reg':'free'); const it=[];
+  it.push(reg?{t:'지역',v:'규제 · 신생아 특례',st:'ok'}:{t:'지역',v:c.thz?'토허제·규제':'비규제 (LTV 70%)',st:c.thz?'bad':'ok'});
+  it.push({t:(MAX/10000)+'억 이하',v:eok(a.p),st:a.p<=MAX?'ok':a.p<=MAX*1.05?'warn':'bad'});
+  if(reg){ const nl=a.p<=C.nbPmax?Math.min(a.p*0.7,C.nbCap):0, need=a.p+acqCost(a.p,false).total-nl, sh=Math.max(0,need-m.equity); it.push({t:'신생아 특례',v:nl?`특례 ${eok(nl)} · 자금 ${sh>0?eok(sh)+' 부족':'충분 (+'+eok(m.equity-need)+')'}`:'9억 초과 · 특례 불가',st:!nl?'bad':sh===0?'ok':sh<=5000?'warn':'bad'}); }
+  else { const lok=m.shortage===0&&m.dsr<=40&&m.loan<=C.loan; it.push({t:'대출 5억 이하',v:m.loan>0?`${eok(m.loan)} · DSR ${m.dsr.toFixed(0)}%`+(m.shortage>0?` · 한도 ${eok(m.shortage)} 부족`:''):'불필요',st:lok?'ok':(m.loan<=C.loan*1.05&&m.shortage===0?'warn':'bad')}); }
   const mid=(S.realChk||{})[k+'|mid']; it.push({t:'중층',v:mid?'✔ 확인함':'매물에서 확인 (누르면 체크)',st:mid?'ok':'man',man:'mid'});
   if(W){ it.push({t:'역 10분 이내',v:`${W.st[0]} 도보 ${W.st[1]}분`,st:W.st[1]<=C.st?'ok':W.st[1]<=15?'warn':'bad'});
     it.push({t:'초품아',v:`${W.sc[0]} 도보 ${W.sc[1]}분`,st:W.sc[1]<=C.sc?'ok':W.sc[1]<=12?'warn':'bad'}); }
@@ -1158,34 +1193,37 @@ function realEval(r){ const k=r.k, L=lbl(k), c=CX[k]||{}, a=realAsk(r), C=REAL_C
   if(cm){ const me=cm.r[S.cmWork], w=cm.r.wife; const tmax=Math.max(me.tr,w.tr), kmax=Math.max(me.km,w.km), cmax=Math.max(me.car8,w.car8);
     it.push({t:'대중교통 1시간',v:`나 ${me.tr}분 · 아내 ${w.tr}분`,st:tmax<=C.tr?'ok':tmax<=C.tr+10?'warn':'bad'});
     it.push({t:'차 30km·1시간',v:`${me.km}/${w.km}km · 출근 ${me.car8}/${w.car8}분`,st:(kmax<=C.km&&cmax<=C.car)?'ok':(kmax<=C.km+3&&cmax<=C.car+10)?'warn':'bad'}); }
+  else { it.push({t:'대중교통 1시간',v:'데이터 없음',st:'man'}); it.push({t:'차 30km·1시간',v:'데이터 없음',st:'man'}); }
   const score=it.filter(x=>x.st==='ok').length, total=it.length;
   // 체크리스트
   const ck=[];
-  const nbN=NB[c.region]; let pair=null; if(nbN){ for(const p of [c.pt,'84','59']){ const a1=L+'|'+p, b1=nbN+'|'+p; if(CX[a1]&&CX[b1]&&CX[a1].est!=null&&CX[b1].est!=null){ pair=[a1,b1,p]; break; } } }
+  const nbN=reg?null:NB[c.region]; let pair=null; if(nbN){ for(const p of [c.pt,'84','59']){ const a1=L+'|'+p, b1=nbN+'|'+p; if(CX[a1]&&CX[b1]&&CX[a1].est!=null&&CX[b1].est!=null){ pair=[a1,b1,p]; break; } } }
   if(pair){ const [a1,b1,p]=pair, ea=CX[a1].est, eb=CX[b1].est, d=(ea/eb-1)*100;
     ck.push([d<=0?'✅':d<=5?'🟡':'⚠️',`옆 규제지역 비교(${p}㎡ 실거래 시세): ${eok(ea)} vs ${CX[b1].name} ${eok(eb)} → ${d<=0?'더 쌈 '+Math.abs(d).toFixed(0)+'%':'더 비쌈 +'+d.toFixed(0)+'%'}`+(p!==c.pt?` (이 단지 ${p}㎡ 기준)`:'')]); }
   else if(nbN){ const nk2=Object.keys(CX).find(x=>lbl(x)===nbN&&CX[x].est!=null); ck.push(['·',`옆 규제지역(${nbN})에 같은 평형이 없어 직접 비교 불가`+(nk2&&perM(k)?` · 참고 ㎡당 ${Math.round(perM(k)).toLocaleString()}만 vs ${CX[nk2].pt}㎡ ${Math.round(perM(nk2)).toLocaleString()}만`:'')]); }
-  else ck.push(['·','옆 규제지역 비교 대상 없음']);
+  else ck.push(['·',reg?'규제지역 단지 · 덕소 매도(무주택) 후 신생아 특례로 매수 전제':'옆 규제지역 비교 대상 없음']);
   const v22=(c.vol||{})['2022'], hh=HH[L];
-  if(c.conv&&!v22){ const vc=(c.vol||{})[String(c.conv)]||0, mo=+(DATA.asof_trades||'').slice(5,7)||12; ck.push([vc/mo*12>=20?'🟡':'⚠️',`환금성: ${c.conv}년 임대→분양전환 단지라 2022년 매매 없음 · 전환 후 ${c.conv}년 거래 ${vc}건(전 평형${hh?` · ${hh.toLocaleString()}세대`:''}) — 전환 직후 매물 출회가 섞여 있어 평소 거래량보다 많게 보일 수 있음`]); }
+  if(!rf&&!CX[k]) ck.push(['⏸','환금성: 앱에 실거래 데이터가 없는 단지 → 직접 확인']);
+  else if(c.conv&&!v22){ const vc=(c.vol||{})[String(c.conv)]||0, mo=+(DATA.asof_trades||'').slice(5,7)||12; ck.push([vc/mo*12>=20?'🟡':'⚠️',`환금성: ${c.conv}년 임대→분양전환 단지라 2022년 매매 없음 · 전환 후 ${c.conv}년 거래 ${vc}건(전 평형${hh?` · ${hh.toLocaleString()}세대`:''}) — 전환 직후 매물 출회가 섞여 있어 평소 거래량보다 많게 보일 수 있음`]); }
   else if(c.note&&!v22) ck.push(['⏸','환금성: 2022년 국토부 매매 기록 없음 → 판단 보류']);
   else ck.push([v22>=20?'✅':v22>=10?'🟡':'⚠️',`환금성: 2022년 거래 ${v22||0}건`+(hh?` (${hh.toLocaleString()}세대 · ${((v22||0)/hh*100).toFixed(1)}%)`:'')]);
   const gap=a.p-myAsk().p, acq=acqCost(a.p,(+c.pt||59)>85).total;
   ck.push(['💸',`덕소에서 옮기는 비용: 차액 ${eok(gap)} + 취득세·중개 등 ${eok(acq)}`]);
-  if(c.est!=null) ck.push(['📈',`최근 실거래 시세 ${eok(c.est)} · 호가와 ${a.p>=c.est?'+':''}${eok(a.p-c.est)}`]);
+  if(r.note) ck.push(['📝',r.note]);
+  if(c.est!=null) ck.push(['📈',`최근 실거래 시세 ${eok(c.est)} · 호가와 ${a.p>=c.est?'+':''}${eok(a.p-c.est)}`]); else if(rf&&CX[rf].est!=null) ck.push(['📈',`참고: 같은 단지 ${CX[rf].pt}㎡ 실거래 시세 ${eok(CX[rf].est)} (평형 다름)`]);
   return {a,m,it,score,total,ck}; }
-function renderReal(){ const RL=realList(); const C=REAL_C;
-  $('realCrit').replaceChildren(...['비규제',`${C.max/10000}억 이하`,`대출 ${C.loan/10000}억 이하`,'중층',`역 도보 ${C.st}분`,`초품아(초교 ${C.sc}분)`,`대중교통 ${C.tr}분`,`차 ${C.km}km·${C.car}분`].map(t=>el('span',null,t)));
-  const ev=RL.map(r=>({r,e:realEval(r)})).sort((x,y)=>y.e.score-x.e.score||x.e.a.p-y.e.a.p);
+function renderReal(){ renderRedev(); const RL=realList(); const C=REAL_C;
+  $('realCrit').replaceChildren(...[`비규제 ${C.max/10000}억·대출 ${C.loan/10000}억`,`규제 ${C.maxReg/10000}억·신생아 특례 ${C.nbCap/10000}억`,'중층',`역 도보 ${C.st}분`,`초품아(초교 ${C.sc}분)`,`대중교통 ${C.tr}분`,`차 ${C.km}km·${C.car}분`].map(t=>el('span',null,t)));
+  const ev=RL.map(r=>({r,e:realEval(r)})).sort((x,y)=>(x.r.grp==='reg')-(y.r.grp==='reg')||y.e.score-x.e.score||x.e.a.p-y.e.a.p);
   if(!ev.some(x=>x.r.k===S.realSel)) S.realSel=ev[0]?ev[0].r.k:null;
   // 매트릭스
   const T=$('realMx'); T.replaceChildren(); const th=el('thead'), hr=el('tr');
-  const COLS=['단지','호가','충족','비규제','10억↓','대출','중층','역','초품아','대중교통','차량','옆 규제','환금성'];
+  const COLS=['단지','호가','충족','지역','예산','대출','중층','역','초품아','대중교통','차량','옆 규제','환금성'];
   COLS.forEach((t,i)=>hr.appendChild(el('th',i>2?'cen':'',t))); th.appendChild(hr); T.appendChild(th); const tb=el('tbody');
   const MARK={ok:'✓',warn:'△',bad:'✕',man:'?'};
   const ckSt=i=>i==='✅'?'ok':i==='🟡'?'warn':i==='⚠️'?'bad':'man';
-  ev.forEach(({r,e})=>{ const k=r.k, c=CX[k]||{name:lbl(k),pt:k.split('|')[1]}; const tr=el('tr',k===S.realSel?'sel':'');
-    tr.appendChild(nameCell(k,(c.region||'')+' · '+e.a.src));
+  let lastG=null; ev.forEach(({r,e})=>{ if(r.grp!==lastG){ lastG=r.grp; const gt=el('tr'); gt.style.cursor='default'; const gd=el('td',null,GRP_T[r.grp]||''); gd.colSpan=COLS.length; gd.style.cssText='font-weight:700;background:var(--panel2);text-align:left;position:static'; gt.appendChild(gd); tb.appendChild(gt); } const k=r.k, c={region:r.region,...(CX[k]||CX[refKey(lbl(k))]||{}),name:rName(r),pt:rPt(r)}; const tr=el('tr',k===S.realSel?'sel':'');
+    { const td=el('td','nm'); const w=el('div','nmw'); const b=el('b',null,c.name+' '); b.appendChild(el('span','mut',c.pt)); w.append(b,el('small',null,(c.region||'')+' · '+e.a.src)); td.appendChild(w); tr.appendChild(td); }
     tr.appendChild(el('td',null,eok(e.a.p)));
     const s=el('td'); const sw=el('span','score'); const bar=el('span','tr'); const bi=el('i'); bi.style.width=(e.score/e.total*100)+'%'; bi.style.background=e.score>=e.total-1?'var(--ok)':e.score>=e.total-3?'var(--warn)':'var(--bad)'; bar.appendChild(bi); sw.append(el('b',null,e.score+'/'+e.total),bar); s.appendChild(sw); tr.appendChild(s);
     e.it.forEach(x=>{ const td=el('td','c '+x.st); const sp=el('span',null,MARK[x.st]||'·'); td.appendChild(sp); td.title=x.t+': '+x.v;
@@ -1200,8 +1238,8 @@ function renderReal(){ const RL=realList(); const C=REAL_C;
   T.appendChild(tb);
   // 선택 상세
   const L=$('realList'); L.replaceChildren(); const cur=ev.find(x=>x.r.k===S.realSel);
-  if(cur){ const {r,e}=cur, k=r.k, c=CX[k]||{name:lbl(k),pt:k.split('|')[1]}; const d=el('div','card rc');
-    const h=el('div','rh'); const n=el('div','rn',c.name); n.appendChild(el('small',null,c.pt+'㎡'));
+  if(cur){ const {r,e}=cur, k=r.k, c={region:r.region,...(CX[k]||CX[refKey(lbl(k))]||{}),name:rName(r),pt:rPt(r)}; const d=el('div','card rc');
+    const h=el('div','rh'); const n=el('div','rn',c.name); n.appendChild(el('small',null,c.pt));
     n.appendChild(el('div','rs '+(e.score>=e.total-1?'ok':e.score>=e.total-3?'warn':'bad'),`조건 ${e.score}/${e.total} 충족`));
     const pr=el('div','rp'); pr.append(el('b',null,eok(e.a.p)),el('small',null,'호가 · '+e.a.src)); h.append(n,pr); d.appendChild(h);
     const g=el('div','rgrid'); e.it.forEach(x=>{ const b=el('div',x.st); b.appendChild(el('b',null,x.t)); b.appendChild(document.createTextNode(x.v));
@@ -1210,12 +1248,12 @@ function renderReal(){ const RL=realList(); const C=REAL_C;
     const ta=el('textarea'); ta.placeholder='옆그레이드 메모: 거주만족도(학교·동선·커뮤니티), 임장 메모 등'; ta.value=(S.realMemo||{})[k]||''; ta.onchange=()=>{ S.realMemo=S.realMemo||{}; S.realMemo[k]=ta.value; save(); }; d.appendChild(ta);
     const tl=el('div','rtools'); const inp=el('input'); inp.type='number'; inp.step='100'; inp.value=r.ask; inp.title='호가(만원)';
     const sv=el('button','btn sm pri','호가 저장'); sv.onclick=()=>{ const v=+inp.value; if(!(v>=3000)){ toast('호가를 확인해주세요'); return; } r.ask=v; r.date=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}); save(); renderReal(); toast('호가 저장'); };
-    const dt=el('button','btn sm','단지 상세'); dt.onclick=()=>openUnit(k);
+    const dt=el('button','btn sm','단지 상세'); dt.onclick=()=>{ const uk=CX[k]?k:refKey(lbl(k)); if(uk) openUnit(uk); else toast('앱에 실거래 데이터가 없는 단지입니다'); };
     const lk=el('a','btn sm','네이버부동산 ↗'); lk.href=naverUrl(k); lk.target='_blank'; lk.rel='noopener';
     const rm=el('button','btn sm','후보에서 빼기'); rm.onclick=()=>{ S.real=S.real.filter(x=>x!==r); save(); renderReal(); };
     tl.append(inp,el('span','mut','만'),sv,dt,lk,rm); d.appendChild(tl); L.appendChild(d); }
   const sel=$('realAddSel'); sel.replaceChildren(); const used=new Set(RL.map(r=>r.k));
-  Object.keys(CX).filter(k=>k!==ME&&!CX[k].thz&&!used.has(k)&&CX[k].est!=null).sort((a,b)=>CX[a].name.localeCompare(CX[b].name,'ko')).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=`${CX[k].name} ${CX[k].pt}㎡ · 시세 ${eok(CX[k].est)}`; sel.appendChild(o); });
+  Object.keys(CX).filter(k=>k!==ME&&!used.has(k)&&CX[k].est!=null).sort((a,b)=>CX[a].name.localeCompare(CX[b].name,'ko')).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=`${CX[k].name} ${CX[k].pt}㎡ · 시세 ${eok(CX[k].est)}`; sel.appendChild(o); });
 }
 
 /* ================= 직주근접 ================= */
@@ -2045,7 +2083,7 @@ $('askFile').addEventListener('change',e=>{ handleAskFiles(e.target.files); e.ta
 document.addEventListener('paste',e=>{ if(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName)) return; const fs=[...(e.clipboardData?.files||[])]; if(fs.length){ e.preventDefault(); handleAskFiles(fs); } });
 $('ask-price').addEventListener('input',askPriceTxt); $('ask-pt').addEventListener('change',()=>{ const c=$('ask-ptc'); c.hidden=$('ask-pt').value!=='__c'; $('ask-ptu').hidden=c.hidden; if(!c.hidden) c.focus(); }); $('ask-kind').addEventListener('change',askKind); $('ask-key').addEventListener('change',askKeyRow); ['ask-bp','ask-prem','ask-opt'].forEach(i=>$(i).addEventListener('input',bunCheck)); $('askSave').onclick=saveAsk; $('imgClose').onclick=()=>{ $('imgSheet').hidden=true; URL.revokeObjectURL($('imgView').src); }; $('imgSheet').onclick=e=>{ if(e.target.id==='imgSheet') $('imgClose').click(); }; $('askSkip').onclick=()=>{ ASKQ.i++; showAsk(); }; $('askCancel').onclick=()=>{ ASKQ=[]; $('askSheet').hidden=true; };
 [...$('segMap').children].forEach(b=>b.onclick=()=>{ S.mapScope=b.dataset.v; save(); renderMap(); });
-$('realAdd').onclick=()=>{ const k=$('realAddSel').value; if(!k) return; realList(); S.real.push({k,ask:CX[k].est,date:new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})}); save(); renderReal(); toast('후보에 추가 (호가는 시세로 임시 입력)'); };
+$('realAdd').onclick=()=>{ const k=$('realAddSel').value; if(!k) return; realList(); S.real.push({k,grp:CX[k].thz?'reg':'free',ask:CX[k].est,date:new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})}); save(); renderReal(); toast('후보에 추가 (호가는 시세로 임시 입력)'); };
 const THEME_LABEL={auto:'자동',light:'라이트',dark:'다크'};
 const mqLight=matchMedia('(prefers-color-scheme: light)');
 function applyTheme(){ const t=S.theme||'auto'; const d=t==='auto'?(mqLight.matches?'light':'dark'):t;
